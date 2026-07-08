@@ -1,3 +1,5 @@
 {
-    "app_name":"SplitSathi"
+  "app_name": "SplitSathi",
+  "setup_working": "Setup working!",
+  "toggle_theme": "Toggle Theme"
 }
