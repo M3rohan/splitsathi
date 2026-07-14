@@ -2,30 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:splitsathi/core/router/app_routes.dart';
 import 'package:splitsathi/core/router/route_transitions.dart';
+import 'package:splitsathi/features/auth/screens/login_screen.dart';
+import 'package:splitsathi/features/auth/screens/signup_screen.dart';
 
 class AppRouter {
   AppRouter._();
 
   static final GoRouter router = GoRouter(
-    initialLocation: AppRoutes.splash,
+    initialLocation: AppRoutes.login,
     debugLogDiagnostics: true,
     routes: [
-      GoRoute(
-        path: AppRoutes.splash,
-        name: AppRoutes.splashName,
-        pageBuilder: (context, state) => buildPageWithTransition(
-          context: context,
-          state: state,
-          child: const _PlaceholderScreen(title: 'Splash'),
-        ),
-      ),
+      // GoRoute(
+      //   path: AppRoutes.splash,
+      //   name: AppRoutes.splashName,
+      //   pageBuilder: (context, state) => buildPageWithTransition(
+      //     context: context,
+      //     state: state,
+      //     child: const _PlaceholderScreen(title: 'Splash'),
+      //   ),
+      // ),
       GoRoute(
         path: AppRoutes.login,
         name: AppRoutes.loginName,
         pageBuilder: (context, state) => buildPageWithTransition(
           context: context,
           state: state,
-          child: const _PlaceholderScreen(title: 'Login'),
+          child: const LoginScreen(),
         ),
       ),
       GoRoute(
@@ -34,7 +36,7 @@ class AppRouter {
         pageBuilder: (context, state) => buildPageWithTransition(
           context: context,
           state: state,
-          child: const _PlaceholderScreen(title: 'Signup'),
+          child: const SignupScreen(),
         ),
       ),
       GoRoute(
@@ -87,8 +89,18 @@ class _PlaceholderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(child: Text('$title Screen')),
+      appBar: AppBar(
+        title: Text(title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              // Navigate back to the login screen
+            },
+          ),
+        ],
+      ),
+      body: Center(child: Text('$title Screen — logged in!')),
     );
   }
 }

@@ -1,5 +1,12 @@
 {
   "app_name": "SplitSathi",
-  "setup_working": "Setup working!",
-  "toggle_theme": "Toggle Theme"
+  "welcome_back": "Welcome back! Log in to continue.",
+  "email": "Email",
+  "password": "Password",
+  "forgot_password": "Forgot Password?",
+  "login": "Login",
+  "no_account": "Don't have an account? ",
+  "sign_up": "Sign Up",
+  "create_account": "Create Account",
+  "full_name": "Full Name"
 }

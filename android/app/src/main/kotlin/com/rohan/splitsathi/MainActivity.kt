@@ -1,4 +1,4 @@
-package com.example.splitsathi
+package com.rohan.splitsathi
 
 import io.flutter.embedding.android.FlutterActivity
 

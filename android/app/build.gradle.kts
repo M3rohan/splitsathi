@@ -10,7 +10,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.splitsathi"
+    namespace = "com.rohan.splitsathi"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

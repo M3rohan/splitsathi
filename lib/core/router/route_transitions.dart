@@ -9,16 +9,15 @@ CustomTransitionPage buildPageWithTransition({
   return CustomTransitionPage(
     key: state.pageKey,
     child: child,
-    transitionDuration: Duration(milliseconds: 300),
+    transitionDuration: Duration(milliseconds: 250),
+    reverseTransitionDuration: Duration(milliseconds: 200),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       return FadeTransition(
-        opacity: animation,
-        child: SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0.05, 0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+        opacity: CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeIn,
         ),
+        child: child,
       );
     },
   );
