@@ -36,29 +36,3 @@ class _SplitSathiAppState extends State<SplitSathiApp> {
     );
   }
 }
-
-class _TempHomeScreen extends StatelessWidget {
-  const _TempHomeScreen();
-
-  @override
-  Widget build(final BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('SplitSathi')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Setup Working', style: TextStyle(fontSize: 20)),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                context.read<ThemeCubit>().toggleTheme();
-              },
-              child: Text('Toggle Theme'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

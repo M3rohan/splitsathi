@@ -69,12 +69,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
+  // Future<void> _onLogoutRequested(
+  //   AuthLogoutRequested event,
+  //   Emitter<AuthState> emit,
+  // ) async {
+  //   await _authRepository.logout();
+  //   emit(state.copyWith(status: AuthStatus.unauthenticated, user: null));
+  // }
   Future<void> _onLogoutRequested(
     AuthLogoutRequested event,
     Emitter<AuthState> emit,
   ) async {
-    await _authRepository.logout();
-    emit(state.copyWith(status: AuthStatus.unauthenticated, user: null));
+    try {
+      await _authRepository.logout();
+      emit(state.copyWith(status: AuthStatus.unauthenticated, clearUser: true));
+    } catch (e) {
+      // Even if repository logout fails, force local state to unauthenticated
+      // so the UI doesn't get stuck, and surface the error for debugging.
+      // ignore: avoid_print
+      print('Logout error: $e');
+      emit(state.copyWith(status: AuthStatus.unauthenticated, clearUser: true));
+    }
   }
 
   String _mapErrorToMessage(Object error) {

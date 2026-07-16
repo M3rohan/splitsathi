@@ -15,8 +15,8 @@ class SignupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthBloc>(
-      create: (_) => getIt<AuthBloc>(),
+    return BlocProvider<AuthBloc>.value(
+      value: getIt<AuthBloc>(),
       child: const _SignupView(),
     );
   }

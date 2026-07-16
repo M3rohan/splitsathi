@@ -28,7 +28,7 @@ Future<void> setupServiceLocator() async {
     ),
   );
 
-  getIt.registerFactory<AuthBloc>(
+getIt.registerLazySingleton<AuthBloc>(
     () => AuthBloc(authRepository: getIt<AuthRepository>()),
   );
 }
