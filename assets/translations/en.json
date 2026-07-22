@@ -19,5 +19,19 @@
   "new_group": "New Group",
   "logout": "Logout",
   "logout_confirm": "Are you sure you want to logout?",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "create_group": "Create Group",
+  "choose_emoji": "Choose an icon",
+  "group_name": "Group Name",
+  "add_members": "Add Members",
+  "member_email_hint": "Enter member's email",
+  "create_group_button": "Create Group",
+  "group_not_found": "Group not found",
+  "group_balance": "Group Balance",
+  "no_expenses_yet": "No expenses yet",
+  "members": "Members",
+  "you": "You",
+  "expenses": "Expenses",
+  "no_expenses_added": "No expenses added yet",
+  "add_expense": "Add Expense"
 }

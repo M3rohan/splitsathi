@@ -7,6 +7,8 @@ import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
 import 'package:splitsathi/features/auth/bloc/auth_state.dart';
 import 'package:splitsathi/features/auth/screens/login_screen.dart';
 import 'package:splitsathi/features/auth/screens/signup_screen.dart';
+import 'package:splitsathi/features/groups/screens/create_group_screen.dart';
+import 'package:splitsathi/features/groups/screens/group_detail_screen.dart';
 import 'package:splitsathi/features/home/screens/home_screen.dart';
 import 'package:splitsathi/features/onboarding/screens/splash_screen.dart';
 
@@ -84,7 +86,7 @@ class AppRouter {
         pageBuilder: (context, state) => buildPageWithTransition(
           context: context,
           state: state,
-          child: const _PlaceholderScreen(title: 'Create Group'),
+          child: const CreateGroupScreen(),
         ),
       ),
       GoRoute(
@@ -104,7 +106,7 @@ class AppRouter {
           return buildPageWithTransition(
             context: context,
             state: state,
-            child: _PlaceholderScreen(title: 'Group Detail: $groupId'),
+            child: GroupDetailScreen(groupId: groupId),
           );
         },
       ),

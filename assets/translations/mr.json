@@ -19,5 +19,19 @@
   "new_group": "नवीन ग्रुप",
   "logout": "लॉगआउट",
   "logout_confirm": "तुम्हाला खात्री आहे की तुम्ही लॉगआउट करू इच्छिता?",
-  "cancel": "रद्द करा"
+  "cancel": "रद्द करा",
+  "create_group": "ग्रुप तयार करा",
+  "choose_emoji": "एक आयकॉन निवडा",
+  "group_name": "ग्रुपचे नाव",
+  "add_members": "सदस्य जोडा",
+  "member_email_hint": "सदस्याचा ईमेल टाका",
+  "create_group_button": "ग्रुप तयार करा",
+  "group_not_found": "ग्रुप सापडला नाही",
+  "group_balance": "ग्रुप शिल्लक",
+  "no_expenses_yet": "अजून कोणताही खर्च नाही",
+  "members": "सदस्य",
+  "you": "तुम्ही",
+  "expenses": "खर्च",
+  "no_expenses_added": "अजून कोणताही खर्च जोडलेला नाही",
+  "add_expense": "खर्च जोडा"
 }
