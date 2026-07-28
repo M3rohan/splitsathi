@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:splitsathi/core/constants/group_icons.dart';
 import 'package:splitsathi/core/di/service_locator.dart';
+import 'package:splitsathi/core/router/app_routes.dart';
 import 'package:splitsathi/core/theme/app_theme.dart';
 import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
 import 'package:splitsathi/features/groups/cubit/group_detail_cubit.dart';
@@ -215,7 +217,18 @@ class _GroupDetailView extends StatelessWidget {
             ),
           ),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () {},
+            onPressed: () {
+              final currentUserId = getIt<AuthBloc>().state.user?.uid;
+              if (currentUserId == null) return;
+              context.pushNamed(
+                AppRoutes.addExpenseName,
+                pathParameters: {'groupId': group.id},
+                extra: {
+                  'members': state.members,
+                  'currentUserId': currentUserId,
+                },
+              );
+            },
             icon: const Icon(Icons.add),
             label: Text('add_expense'.tr()),
           ).animate().scale(delay: 700.ms, curve: Curves.easeOutBack),

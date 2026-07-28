@@ -7,6 +7,7 @@ import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
 import 'package:splitsathi/features/auth/bloc/auth_state.dart';
 import 'package:splitsathi/features/auth/screens/login_screen.dart';
 import 'package:splitsathi/features/auth/screens/signup_screen.dart';
+import 'package:splitsathi/features/expenses/screens/add_expense_screen.dart';
 import 'package:splitsathi/features/groups/screens/create_group_screen.dart';
 import 'package:splitsathi/features/groups/screens/group_detail_screen.dart';
 import 'package:splitsathi/features/home/screens/home_screen.dart';
@@ -118,6 +119,23 @@ class AppRouter {
           state: state,
           child: const _PlaceholderScreen(title: 'Profile'),
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.addExpense,
+        name: AppRoutes.addExpenseName,
+        pageBuilder: (context, state) {
+          final groupId = state.pathParameters['groupId']!;
+          final extra = state.extra as Map<String, dynamic>;
+          return buildPageWithTransition(
+            context: context,
+            state: state,
+            child: AddExpenseScreen(
+              groupId: groupId,
+              members: extra['members'] as List<Map<String, dynamic>>,
+              currentUserId: extra['currentUserId'] as String,
+            ),
+          );
+        },
       ),
     ],
   );

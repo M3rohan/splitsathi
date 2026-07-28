@@ -5,6 +5,9 @@ import 'package:get_it/get_it.dart';
 import 'package:splitsathi/core/theme/theme_cubit.dart';
 import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
 import 'package:splitsathi/features/auth/repository/auth_repository.dart';
+import 'package:splitsathi/features/expenses/bloc/expense_bloc.dart';
+import 'package:splitsathi/features/expenses/cubit/add_expense_form_cubit.dart';
+import 'package:splitsathi/features/expenses/repository/expense_repository.dart';
 import 'package:splitsathi/features/groups/bloc/group_bloc.dart';
 import 'package:splitsathi/features/groups/cubit/create_group_form_cubit.dart';
 import 'package:splitsathi/features/groups/cubit/group_detail_cubit.dart';
@@ -50,5 +53,17 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerFactory<GroupDetailCubit>(
     () => GroupDetailCubit(groupRepository: getIt<GroupRepository>()),
+  );
+
+  getIt.registerLazySingleton<ExpenseRepository>(
+    () => ExpenseRepository(firestore: getIt<FirebaseFirestore>()),
+  );
+
+  getIt.registerFactory<ExpenseBloc>(
+    () => ExpenseBloc(expenseRepository: getIt<ExpenseRepository>()),
+  );
+
+  getIt.registerFactory<AddExpenseFormCubit>(
+    () => AddExpenseFormCubit(expenseRepository: getIt<ExpenseRepository>()),
   );
 }
