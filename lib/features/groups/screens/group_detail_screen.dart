@@ -1,15 +1,15 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:splitsathi/core/constants/group_icons.dart';
-import 'package:splitsathi/core/di/service_locator.dart';
-import 'package:splitsathi/core/router/app_routes.dart';
-import 'package:splitsathi/core/theme/app_theme.dart';
-import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
-import 'package:splitsathi/features/groups/cubit/group_detail_cubit.dart';
+import '../cubit/group_detail_cubit.dart';
+import '../../../core/di/service_locator.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/router/app_routes.dart';
+import '../../../core/constants/expense_categories.dart';
+import '../../auth/bloc/auth_bloc.dart';
 
 class GroupDetailScreen extends StatelessWidget {
   final String groupId;
@@ -28,7 +28,7 @@ class _GroupDetailView extends StatelessWidget {
   const _GroupDetailView();
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(BuildContext context) {
     return BlocBuilder<GroupDetailCubit, GroupDetailState>(
       builder: (context, state) {
         if (state.status == GroupDetailStatus.loading) {
@@ -46,7 +46,19 @@ class _GroupDetailView extends StatelessWidget {
         }
 
         final group = state.group!;
-        final currentUserId = getIt<AuthBloc>().state.user?.uid;
+        final currentUserId = getIt<AuthBloc>().state.user?.uid ?? '';
+        final myBalance = state.netBalances[currentUserId] ?? 0.0;
+        final isPositive = myBalance >= 0;
+
+        String nameFor(String uid) {
+          final m = state.members.firstWhere(
+            (m) => m['uid'] == uid,
+            orElse: () => {'name': '?'},
+          );
+          return (m['name'] as String?)?.isNotEmpty == true
+              ? m['name']
+              : (m['email'] ?? '?');
+        }
 
         return Scaffold(
           appBar: AppBar(
@@ -62,6 +74,16 @@ class _GroupDetailView extends StatelessWidget {
                 ),
               ],
             ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.pie_chart_outline_rounded),
+                tooltip: 'insights'.tr(),
+                onPressed: () => context.pushNamed(
+                  AppRoutes.insightsName,
+                  pathParameters: {'groupId': group.id},
+                ),
+              ),
+            ],
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -86,16 +108,16 @@ class _GroupDetailView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'group_balance'.tr(),
+                            isPositive ? 'you_are_owed'.tr() : 'you_owe'.tr(),
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.85),
                               fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 8),
-                          const Text(
-                            '₹0.00',
-                            style: TextStyle(
+                          Text(
+                            '₹${myBalance.abs().toStringAsFixed(2)}',
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
@@ -103,7 +125,15 @@ class _GroupDetailView extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'no_expenses_yet'.tr(),
+                            state.expenses.isEmpty
+                                ? 'no_expenses_yet'.tr()
+                                : 'group_total'.tr(
+                                    args: [
+                                      state.expenses
+                                          .fold(0.0, (s, e) => s + e.amount)
+                                          .toStringAsFixed(2),
+                                    ],
+                                  ),
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.85),
                               fontSize: 13,
@@ -119,8 +149,58 @@ class _GroupDetailView extends StatelessWidget {
                       end: const Offset(1, 1),
                     ),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
 
+                if (state.settlements.isNotEmpty) ...[
+                  Text(
+                    'suggested_settlements'.tr(),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ).animate().fadeIn(delay: 150.ms),
+                  const SizedBox(height: 12),
+                  ...List.generate(state.settlements.length, (index) {
+                    final s = state.settlements[index];
+                    return Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 18,
+                                color: AppTheme.primaryColor,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  '${nameFor(s.fromUserId)} → ${nameFor(s.toUserId)}',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ),
+                              Text(
+                                '₹${s.amount.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                        .animate()
+                        .fadeIn(delay: (200 + index * 60).ms)
+                        .slideX(begin: -0.05, end: 0);
+                  }),
+                  const SizedBox(height: 24),
+                ],
                 Text(
                   'members'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -171,6 +251,17 @@ class _GroupDetailView extends StatelessWidget {
                                     ?.copyWith(fontWeight: FontWeight.w500),
                               ),
                             ),
+                            if (state.netBalances[member['uid']] != null)
+                              Text(
+                                '${state.netBalances[member['uid']]! >= 0 ? '+' : ''}₹${state.netBalances[member['uid']]!.toStringAsFixed(0)}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: state.netBalances[member['uid']]! >= 0
+                                      ? Colors.green
+                                      : Colors.red,
+                                ),
+                              ),
                           ],
                         ),
                       )
@@ -178,8 +269,10 @@ class _GroupDetailView extends StatelessWidget {
                       .fadeIn(delay: (300 + index * 60).ms)
                       .slideX(begin: -0.05, end: 0);
                 }),
+
                 const SizedBox(height: 28),
 
+                // ---------- Expenses ----------
                 Text(
                   'expenses'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -189,43 +282,105 @@ class _GroupDetailView extends StatelessWidget {
 
                 const SizedBox(height: 12),
 
-                Container(
-                  padding: EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.receipt_long_rounded,
-                        size: 44,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.3),
+                if (state.expenses.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.receipt_long_rounded,
+                          size: 44,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.3),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'no_expenses_added'.tr(),
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ).animate().fadeIn(delay: 600.ms)
+                else
+                  ...List.generate(state.expenses.length, (index) {
+                    final expense = state.expenses[index];
+                    final payerName = nameFor(expense.paidBy);
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'no_expenses_added'.tr(),
-                        style: Theme.of(context).textTheme.bodyMedium,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor.withValues(
+                                alpha: 0.12,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              ExpenseCategories.iconForId(expense.category),
+                              color: AppTheme.primaryColor,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  expense.description,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  'paid_by_name'.tr(args: [payerName]),
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            '₹${expense.amount.toStringAsFixed(2)}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: 600.ms),
+                    ).animate().fadeIn(delay: (600 + index * 60).ms);
+                  }),
               ],
             ),
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () {
-              final currentUserId = getIt<AuthBloc>().state.user?.uid;
-              if (currentUserId == null) return;
+              final uid = getIt<AuthBloc>().state.user?.uid;
+              if (uid == null) return;
               context.pushNamed(
                 AppRoutes.addExpenseName,
                 pathParameters: {'groupId': group.id},
                 extra: {
+                  'groupName': group.name,
                   'members': state.members,
-                  'currentUserId': currentUserId,
+                  'currentUserId': uid,
                 },
               );
             },

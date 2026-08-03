@@ -13,6 +13,9 @@ import 'package:splitsathi/features/groups/bloc/group_bloc.dart';
 import 'package:splitsathi/features/groups/bloc/group_event.dart';
 import 'package:splitsathi/features/groups/bloc/group_state.dart';
 import 'package:splitsathi/features/groups/models/group_model.dart';
+import 'package:splitsathi/features/notifications/bloc/notification_bloc.dart';
+import 'package:splitsathi/features/notifications/bloc/notification_event.dart';
+import 'package:splitsathi/features/notifications/bloc/notification_state.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -43,6 +46,7 @@ class _HomeViewState extends State<_HomeView> {
     final userId = getIt<AuthBloc>().state.user?.uid;
     if (userId != null) {
       context.read<GroupBloc>().add(GroupsSubscriptionRequested(userId));
+      getIt<NotificationBloc>().add(NotificationsSubscriptionRequested(userId));
     }
   }
 
@@ -55,6 +59,46 @@ class _HomeViewState extends State<_HomeView> {
       appBar: AppBar(
         title: Text('app_name'.tr()),
         actions: [
+          BlocBuilder<NotificationBloc, NotificationState>(
+            bloc: getIt<NotificationBloc>(),
+            builder: (context, notifState) {
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined),
+                    onPressed: () =>
+                        context.pushNamed(AppRoutes.notificationsName),
+                  ),
+
+                  if (notifState.unreadCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '${notifState.unreadCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+
           IconButton(
             icon: const Icon(Icons.logout_rounded),
             onPressed: () {
@@ -162,6 +206,40 @@ class _HomeViewState extends State<_HomeView> {
                     return const Padding(
                       padding: EdgeInsetsGeometry.symmetric(vertical: 40),
                       child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+
+                  if (state.status == GroupStatus.error) {
+                    return Container(
+                      padding: EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.errorContainer.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(Icons.error_outline_rounded),
+                          const SizedBox(height: 8),
+                          Text(
+                            'something_went_wrong'.tr(),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: () {
+                              final userId = getIt<AuthBloc>().state.user?.uid;
+                              if (userId != null) {
+                                context.read<GroupBloc>().add(
+                                  GroupsSubscriptionRequested(userId),
+                                );
+                              }
+                            },
+                            child: Text('retry'.tr()),
+                          ),
+                        ],
+                      ),
                     );
                   }
 

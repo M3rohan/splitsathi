@@ -56,4 +56,21 @@ class AuthRepository {
   Future<void> sendPasswordResetEmail({required String email}) async {
     await _firebaseAuth.sendPasswordResetEmail(email: email);
   }
+
+  /// Ensures a Firestore profile document exists for the given user.
+  /// If missing (e.g. due to a partial signup failure), creates it now.
+  /// Safe to call every time — does nothing if the profile already exists.
+  Future<void> ensureUserProfileExists(User user) async {
+    final docRef = _firebaseFirestore.collection('users').doc(user.uid);
+    final doc = await docRef.get();
+
+    if (!doc.exists) {}
+    await docRef.set({
+      'uid': user.uid,
+      'name': user.displayName ?? user.email?.split('@').first ?? 'User',
+      'email': user.email ?? '',
+      'avatarId': 'avatar_1',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
 }

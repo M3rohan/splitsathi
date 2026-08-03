@@ -12,6 +12,9 @@ import 'package:splitsathi/features/groups/bloc/group_bloc.dart';
 import 'package:splitsathi/features/groups/cubit/create_group_form_cubit.dart';
 import 'package:splitsathi/features/groups/cubit/group_detail_cubit.dart';
 import 'package:splitsathi/features/groups/repository/group_repository.dart';
+import 'package:splitsathi/features/insights/cubit/insights_cubit.dart';
+import 'package:splitsathi/features/notifications/bloc/notification_bloc.dart';
+import 'package:splitsathi/features/notifications/repository/notification_repository.dart';
 
 final getIt = GetIt.instance;
 Future<void> setupServiceLocator() async {
@@ -52,7 +55,10 @@ Future<void> setupServiceLocator() async {
   );
 
   getIt.registerFactory<GroupDetailCubit>(
-    () => GroupDetailCubit(groupRepository: getIt<GroupRepository>()),
+    () => GroupDetailCubit(
+      groupRepository: getIt<GroupRepository>(),
+      expenseRepository: getIt<ExpenseRepository>(),
+    ),
   );
 
   getIt.registerLazySingleton<ExpenseRepository>(
@@ -64,6 +70,23 @@ Future<void> setupServiceLocator() async {
   );
 
   getIt.registerFactory<AddExpenseFormCubit>(
-    () => AddExpenseFormCubit(expenseRepository: getIt<ExpenseRepository>()),
+    () => AddExpenseFormCubit(
+      expenseRepository: getIt<ExpenseRepository>(),
+      notificationRepository: getIt<NotificationRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepository(firestore: getIt<FirebaseFirestore>()),
+  );
+
+  getIt.registerLazySingleton<NotificationBloc>(
+    () => NotificationBloc(
+      notificationRepository: getIt<NotificationRepository>(),
+    ),
+  );
+
+  getIt.registerFactory<InsightsCubit>(
+    () => InsightsCubit(expenseRepository: getIt<ExpenseRepository>()),
   );
 }

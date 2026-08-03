@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -7,17 +8,20 @@ import 'package:go_router/go_router.dart';
 import 'package:splitsathi/core/constants/expense_categories.dart';
 import 'package:splitsathi/core/di/service_locator.dart';
 import 'package:splitsathi/core/theme/app_theme.dart';
+import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
 import 'package:splitsathi/features/expenses/bloc/expense_bloc.dart';
 import 'package:splitsathi/features/expenses/cubit/add_expense_form_cubit.dart';
 import 'package:splitsathi/features/expenses/cubit/add_expense_form_state.dart';
 
 class AddExpenseScreen extends StatelessWidget {
   final String groupId;
+  final String groupName;
   final List<Map<String, dynamic>> members;
   final String currentUserId;
   const AddExpenseScreen({
     super.key,
     required this.groupId,
+    required this.groupName,
     required this.members,
     required this.currentUserId,
   });
@@ -35,15 +39,24 @@ class AddExpenseScreen extends StatelessWidget {
             ),
         ),
       ],
-      child: _AddExpenseView(groupId: groupId, members: members),
+      child: _AddExpenseView(
+        groupId: groupId,
+        members: members,
+        groupName: groupName,
+      ),
     );
   }
 }
 
 class _AddExpenseView extends StatefulWidget {
   final String groupId;
+  final String groupName;
   final List<Map<String, dynamic>> members;
-  const _AddExpenseView({required this.groupId, required this.members});
+  const _AddExpenseView({
+    required this.groupId,
+    required this.members,
+    required this.groupName,
+  });
 
   @override
   State<_AddExpenseView> createState() => _AddExpenseViewState();
@@ -300,10 +313,17 @@ class _AddExpenseViewState extends State<_AddExpenseView> {
     final description = values['description'] as String;
     final amount = double.parse(values['amount'].toString());
 
+    final currentUser = getIt<AuthBloc>().state.user;
+    final actorName = currentUser?.displayName ?? 'Someone';
+
     final success = await context.read<AddExpenseFormCubit>().submit(
       groupId: widget.groupId,
+      groupName: widget.groupName,
       description: description,
       amount: amount,
+      allMemberIds: widget.members.map((m) => m['uid'] as String).toList(),
+      actorName: actorName,
+      actorUserId: currentUser?.uid ?? '',
     );
     if (success && context.mounted) {
       if (context.canPop()) {

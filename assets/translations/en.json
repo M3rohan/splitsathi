@@ -55,5 +55,19 @@
   "category_utilities": "Bills",
   "split_between": "Split between",
   "split_hint": "Split equally among {} people",
-  "save_expense": "Save Expense"
+  "save_expense": "Save Expense",
+  "paid_by_name": "Paid by {}",
+  "something_went_wrong": "Something went wrong loading your groups",
+  "retry": "Retry",
+  "you_are_owed": "You are owed",
+  "you_owe": "You owe",
+  "group_total": "Group total: ₹{}",
+  "suggested_settlements": "Suggested Settlements",
+  "notifications": "Notifications",
+  "mark_all_read": "Mark all read",
+  "no_notifications": "No notifications yet",
+  "insights": "Insights",
+  "no_data_for_insights": "Add some expenses to see insights",
+  "total_spent": "Total Spent",
+  "by_category": "By Category"
 }

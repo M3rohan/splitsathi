@@ -20,6 +20,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     final user = _authRepository.currentUser;
     if (user != null) {
+      await _authRepository.ensureUserProfileExists(user);
       emit(state.copyWith(status: AuthStatus.authenticated, user: user));
     } else {
       emit(state.copyWith(status: AuthStatus.unauthenticated));
@@ -58,6 +59,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: event.email,
         password: event.password,
       );
+      if (user != null) {
+        await _authRepository.ensureUserProfileExists(user);
+      }
       emit(state.copyWith(status: AuthStatus.authenticated, user: user));
     } catch (e) {
       emit(

@@ -11,6 +11,8 @@ import 'package:splitsathi/features/expenses/screens/add_expense_screen.dart';
 import 'package:splitsathi/features/groups/screens/create_group_screen.dart';
 import 'package:splitsathi/features/groups/screens/group_detail_screen.dart';
 import 'package:splitsathi/features/home/screens/home_screen.dart';
+import 'package:splitsathi/features/insights/screens/insights_screen.dart';
+import 'package:splitsathi/features/notifications/screens/notifications_screen.dart';
 import 'package:splitsathi/features/onboarding/screens/splash_screen.dart';
 
 class AppRouter {
@@ -131,9 +133,32 @@ class AppRouter {
             state: state,
             child: AddExpenseScreen(
               groupId: groupId,
+              groupName: extra['groupName'] as String,
               members: extra['members'] as List<Map<String, dynamic>>,
               currentUserId: extra['currentUserId'] as String,
             ),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        name: AppRoutes.notificationsName,
+        pageBuilder: (context, state) => buildPageWithTransition(
+          context: context,
+          state: state,
+          child: const NotificationsScreen(),
+        ),
+      ),
+
+      GoRoute(
+        path: AppRoutes.insights,
+        name: AppRoutes.insightsName,
+        pageBuilder: (context, state) {
+          final groupId = state.pathParameters['groupId']!;
+          return buildPageWithTransition(
+            context: context,
+            state: state,
+            child: InsightsScreen(groupId: groupId),
           );
         },
       ),
