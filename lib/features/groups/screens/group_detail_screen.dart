@@ -151,6 +151,38 @@ class _GroupDetailView extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
+                if (state.dueRecurringExpenses.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.notifications_active_rounded,
+                          color: Colors.orange,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'recurring_due'.tr(
+                              args: [
+                                state.dueRecurringExpenses.length.toString(),
+                              ],
+                            ),
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ).animate().fadeIn(),
+
+                const SizedBox(height: 24),
+
                 if (state.settlements.isNotEmpty) ...[
                   Text(
                     'suggested_settlements'.tr(),

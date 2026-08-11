@@ -9,6 +9,7 @@ import 'package:splitsathi/core/theme/app_theme.dart';
 import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
 import 'package:splitsathi/features/auth/bloc/auth_event.dart';
 import 'package:splitsathi/features/auth/bloc/auth_state.dart';
+import 'package:splitsathi/widgets/animated_dots.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -82,26 +83,32 @@ class _SplashViewState extends State<_SplashView> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.35),
+                          blurRadius: 35,
+                          spreadRadius: 6,
+                          offset: const Offset(0, 12),
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.account_balance_wallet_rounded,
-                      color: AppTheme.primaryColor,
-                      size: 50,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        'assets/images/app_icon.png',
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   )
                   .animate()
+                  .fadeIn(duration: 400.ms)
                   .scale(
-                    duration: 600.ms,
-                    curve: Curves.easeOutBack,
-                    begin: const Offset(0.5, 0.5),
+                    begin: const Offset(0.8, 0.8),
                     end: const Offset(1, 1),
+                    curve: Curves.easeOutBack,
                   )
-                  .fadeIn(duration: 400.ms),
+                  .then()
+                  .shimmer(duration: 1200.ms),
               const SizedBox(height: 24),
               Text(
                     'app_name'.tr(),
@@ -124,14 +131,7 @@ class _SplashViewState extends State<_SplashView> {
                 ),
               ).animate().fadeIn(delay: 500.ms, duration: 500.ms),
               const SizedBox(height: 60),
-              const SizedBox(
-                width: 28,
-                height: 28,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: Colors.white,
-                ),
-              ).animate().fadeIn(delay: 700.ms),
+              const AnimatedDots().animate().fadeIn(delay: 700.ms),
             ],
           ),
         ),

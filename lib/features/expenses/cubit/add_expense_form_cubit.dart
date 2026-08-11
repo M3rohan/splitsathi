@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:splitsathi/core/utils/recurrence_helper.dart';
 import 'package:splitsathi/features/expenses/cubit/add_expense_form_state.dart';
 import 'package:splitsathi/features/expenses/models/expense_model.dart';
 import 'package:splitsathi/features/expenses/repository/expense_repository.dart';
@@ -40,6 +41,14 @@ class AddExpenseFormCubit extends Cubit<AddExpenseFormState> {
     emit(state.copyWith(splitBetween: current));
   }
 
+  void toggleRecurring(bool value) {
+    emit(state.copyWith(isRecurring: value));
+  }
+
+  void selectRecurrenceFrequency(String frequency) {
+    emit(state.copyWith(recurrenceFrequency: frequency));
+  }
+
   Future<bool> submit({
     required String groupId,
     required String groupName,
@@ -70,6 +79,13 @@ class AddExpenseFormCubit extends Cubit<AddExpenseFormState> {
         splitBetween: state.splitBetween,
         splitType: 'equal',
         category: state.category,
+        isRecurring: state.isRecurring,
+        recurrenceFrequency: state.isRecurring
+            ? state.recurrenceFrequency
+            : null,
+        nextDueDate: state.isRecurring
+            ? RecurrenceHelper.calculateNextDueDate(state.recurrenceFrequency)
+            : null,
       );
       await _expenseRepository.addExpense(expense);
 

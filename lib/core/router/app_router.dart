@@ -14,6 +14,8 @@ import 'package:splitsathi/features/home/screens/home_screen.dart';
 import 'package:splitsathi/features/insights/screens/insights_screen.dart';
 import 'package:splitsathi/features/notifications/screens/notifications_screen.dart';
 import 'package:splitsathi/features/onboarding/screens/splash_screen.dart';
+import 'package:splitsathi/features/profile/screens/profile_screen.dart';
+import 'package:splitsathi/features/profile/screens/settings_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -119,7 +121,17 @@ class AppRouter {
         pageBuilder: (context, state) => buildPageWithTransition(
           context: context,
           state: state,
-          child: const _PlaceholderScreen(title: 'Profile'),
+          child: const ProfileScreen(),
+        ),
+      ),
+
+      GoRoute(
+        path: AppRoutes.settings,
+        name: AppRoutes.settingsName,
+        pageBuilder: (context, state) => buildPageWithTransition(
+          context: context,
+          state: state,
+          child: const SettingsScreen(),
         ),
       ),
       GoRoute(

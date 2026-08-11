@@ -6,6 +6,8 @@ class AddExpenseFormState extends Equatable {
   final List<String> splitBetween;
   final bool isSubmitting;
   final String? errorMessage;
+  final bool isRecurring;
+  final String recurrenceFrequency;
 
   const AddExpenseFormState({
     this.category = 'general',
@@ -13,6 +15,8 @@ class AddExpenseFormState extends Equatable {
     this.splitBetween = const [],
     this.isSubmitting = false,
     this.errorMessage,
+    this.isRecurring = false,
+    this.recurrenceFrequency = 'monthly',
   });
 
   AddExpenseFormState copyWith({
@@ -21,6 +25,8 @@ class AddExpenseFormState extends Equatable {
     List<String>? splitBetween,
     bool? isSubmitting,
     String? errorMessage,
+    bool? isRecurring,
+    String? recurrenceFrequency,
   }) {
     return AddExpenseFormState(
       category: category ?? this.category,
@@ -28,6 +34,8 @@ class AddExpenseFormState extends Equatable {
       splitBetween: splitBetween ?? this.splitBetween,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       errorMessage: errorMessage ?? this.errorMessage,
+      isRecurring: isRecurring ?? this.isRecurring,
+      recurrenceFrequency: recurrenceFrequency ?? this.recurrenceFrequency,
     );
   }
 
@@ -38,5 +46,7 @@ class AddExpenseFormState extends Equatable {
     splitBetween,
     isSubmitting,
     errorMessage,
+    isRecurring,
+    recurrenceFrequency,
   ];
 }

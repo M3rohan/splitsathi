@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:splitsathi/core/utils/debt_simplifier.dart';
+import 'package:splitsathi/core/utils/recurrence_helper.dart';
 import 'package:splitsathi/features/expenses/models/expense_model.dart';
 import 'package:splitsathi/features/expenses/repository/expense_repository.dart';
 import 'package:splitsathi/features/groups/models/group_model.dart';
@@ -17,6 +18,7 @@ class GroupDetailState extends Equatable {
   final List<ExpenseModel> expenses;
   final Map<String, double> netBalances;
   final List<SettlementTransaction> settlements;
+  final List<ExpenseModel> dueRecurringExpenses;
 
   const GroupDetailState({
     this.status = GroupDetailStatus.loading,
@@ -25,6 +27,7 @@ class GroupDetailState extends Equatable {
     this.expenses = const [],
     this.netBalances = const {},
     this.settlements = const [],
+    this.dueRecurringExpenses = const [],
   });
 
   GroupDetailState copyWith({
@@ -34,6 +37,7 @@ class GroupDetailState extends Equatable {
     List<ExpenseModel>? expenses,
     Map<String, double>? netBalances,
     List<SettlementTransaction>? settlements,
+    List<ExpenseModel>? dueRecurringExpenses,
   }) {
     return GroupDetailState(
       status: status ?? this.status,
@@ -42,6 +46,7 @@ class GroupDetailState extends Equatable {
       expenses: expenses ?? this.expenses,
       netBalances: netBalances ?? this.netBalances,
       settlements: settlements ?? this.settlements,
+      dueRecurringExpenses: dueRecurringExpenses ?? this.dueRecurringExpenses,
     );
   }
 
@@ -53,6 +58,7 @@ class GroupDetailState extends Equatable {
     expenses,
     netBalances,
     settlements,
+    dueRecurringExpenses,
   ];
 }
 
@@ -110,11 +116,16 @@ class GroupDetailCubit extends Cubit<GroupDetailState> {
 
       final settlements = DebtSimplifier.simplifyDebts(netBalances);
 
+      final dueRecurring = expenses
+          .where((e) => e.isRecurring && RecurrenceHelper.isDue(e.nextDueDate))
+          .toList();
+
       emit(
         state.copyWith(
           expenses: expenses,
           netBalances: netBalances,
           settlements: settlements,
+          dueRecurringExpenses: dueRecurring,
         ),
       );
     });

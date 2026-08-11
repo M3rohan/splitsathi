@@ -100,6 +100,11 @@ class _HomeViewState extends State<_HomeView> {
           ),
 
           IconButton(
+            icon: const Icon(Icons.person_outline_rounded),
+            onPressed: () => context.pushNamed(AppRoutes.profileName),
+          ),
+
+          IconButton(
             icon: const Icon(Icons.logout_rounded),
             onPressed: () {
               _confirmLogout(context);

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
+import 'package:splitsathi/core/security/biometric_service.dart';
 import 'package:splitsathi/core/theme/theme_cubit.dart';
 import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
 import 'package:splitsathi/features/auth/repository/auth_repository.dart';
@@ -15,6 +16,8 @@ import 'package:splitsathi/features/groups/repository/group_repository.dart';
 import 'package:splitsathi/features/insights/cubit/insights_cubit.dart';
 import 'package:splitsathi/features/notifications/bloc/notification_bloc.dart';
 import 'package:splitsathi/features/notifications/repository/notification_repository.dart';
+import 'package:splitsathi/features/profile/cubit/settings_cubit.dart';
+import 'package:splitsathi/features/profile/repository/profile_repository.dart';
 
 final getIt = GetIt.instance;
 Future<void> setupServiceLocator() async {
@@ -88,5 +91,15 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerFactory<InsightsCubit>(
     () => InsightsCubit(expenseRepository: getIt<ExpenseRepository>()),
+  );
+
+  getIt.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepository(firestore: getIt<FirebaseFirestore>()),
+  );
+
+  getIt.registerLazySingleton<BiometricService>(() => BiometricService());
+
+  getIt.registerFactory<SettingsCubit>(
+    () => SettingsCubit(biometricService: getIt<BiometricService>()),
   );
 }

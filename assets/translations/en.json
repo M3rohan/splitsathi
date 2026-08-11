@@ -69,5 +69,22 @@
   "insights": "Insights",
   "no_data_for_insights": "Add some expenses to see insights",
   "total_spent": "Total Spent",
-  "by_category": "By Category"
+  "by_category": "By Category",
+  "make_recurring": "Make this recurring",
+  "recurring_hint": "Get reminded to log this again",
+  "weekly": "Weekly",
+  "monthly": "Monthly",
+  "recurring_due": "{} recurring expense(s) due — log them again",
+  "profile": "Profile",
+  "settings": "Settings",
+  "choose_avatar": "Choose your avatar",
+  "appearance": "Appearance",
+  "light": "Light",
+  "dark": "Dark",
+  "system": "System",
+  "language": "Language",
+  "security": "Security",
+  "enable_biometric": "Enable biometric lock",
+  "biometric_hint": "Require fingerprint/face for sensitive actions",
+  "biometric_not_supported": "Biometric authentication not available on this device"
 }

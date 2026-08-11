@@ -11,6 +11,9 @@ class ExpenseModel {
   final Map<String, double>? customSplits;
   final String category;
   final DateTime? createdAt;
+  final bool isRecurring;
+  final String? recurrenceFrequency;
+  final DateTime? nextDueDate;
 
   ExpenseModel({
     required this.id,
@@ -23,6 +26,9 @@ class ExpenseModel {
     this.customSplits,
     this.category = 'general',
     this.createdAt,
+    this.isRecurring = false,
+    this.recurrenceFrequency,
+    this.nextDueDate,
   });
 
   factory ExpenseModel.fromFireStore(DocumentSnapshot doc) {
@@ -44,6 +50,9 @@ class ExpenseModel {
           : null,
       category: data['category'] ?? 'general',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      isRecurring: data['isRecurring'] ?? false,
+      recurrenceFrequency: data['recurrenceFrequency'],
+      nextDueDate: (data['nextDueDate'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -58,6 +67,11 @@ class ExpenseModel {
       'customSplits': customSplits,
       'category': category,
       'createdAt': FieldValue.serverTimestamp(),
+      'isRecurring': isRecurring,
+      'recurrenceFrequency': recurrenceFrequency,
+      'nextDueDate': nextDueDate != null
+          ? Timestamp.fromDate(nextDueDate!)
+          : null,
     };
   }
 

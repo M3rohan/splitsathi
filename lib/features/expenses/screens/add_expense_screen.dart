@@ -257,8 +257,9 @@ class _AddExpenseViewState extends State<_AddExpenseView> {
                   BlocBuilder<AddExpenseFormCubit, AddExpenseFormState>(
                     buildWhen: (p, c) => p.splitBetween != c.splitBetween,
                     builder: (context, formState) {
-                      if (formState.splitBetween.isEmpty)
+                      if (formState.splitBetween.isEmpty) {
                         return const SizedBox.shrink();
+                      }
                       return Text(
                         'split_hint'.tr(
                           args: [formState.splitBetween.length.toString()],
@@ -269,6 +270,51 @@ class _AddExpenseViewState extends State<_AddExpenseView> {
                   ),
 
                   const SizedBox(height: 32),
+
+                  BlocBuilder<AddExpenseFormCubit, AddExpenseFormState>(
+                    buildWhen: (p, c) =>
+                        p.isRecurring != c.isRecurring ||
+                        p.recurrenceFrequency != c.recurrenceFrequency,
+                    builder: (context, formState) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SwitchListTile(
+                            value: formState.isRecurring,
+                            onChanged: (value) => context
+                                .read<AddExpenseFormCubit>()
+                                .toggleRecurring(value),
+                            title: Text('make_recurring'.tr()),
+                            subtitle: Text('recurring_hint'.tr()),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+
+                          if (formState.isRecurring)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: SegmentedButton<String>(
+                                segments: [
+                                  ButtonSegment(
+                                    value: 'weekly',
+                                    label: Text('weekly'.tr()),
+                                  ),
+                                  ButtonSegment(
+                                    value: 'monthly',
+                                    label: Text('monthly'.tr()),
+                                  ),
+                                ],
+                                selected: {formState.recurrenceFrequency},
+                                onSelectionChanged: (selection) => context
+                                    .read<AddExpenseFormCubit>()
+                                    .selectRecurrenceFrequency(selection.first),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
 
                   BlocConsumer<AddExpenseFormCubit, AddExpenseFormState>(
                     listenWhen: (p, c) => p.errorMessage != c.errorMessage,
