@@ -15,6 +15,9 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     on<NotificationsSubscriptionRequested>(_onSubscriptionRequested);
     on<NotificationsUpdated>(_onUpdated);
     on<NotificationMarkAllReadRequested>(_onMarkAllRead);
+    on<NotificationsResetRequested>(
+      (event, emit) => emit(const NotificationState()),
+    );
   }
 
   Future<void> _onSubscriptionRequested(
@@ -36,6 +39,12 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     Emitter<NotificationState> emit,
   ) async {
     await _notificationRepository.markAllAsRead(event.userId);
+  }
+
+  Future<void> resetSubscription() async {
+    await _subscription?.cancel();
+    _subscription = null;
+    add(const NotificationsResetRequested());
   }
 
   @override

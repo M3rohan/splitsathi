@@ -105,5 +105,9 @@
   "split_custom": "Custom",
   "remaining": "Remaining",
   "edit_name": "Edit Name",
-  "save": "Save"
+  "save": "Save",
+  "offline_message": "You're offline — changes will sync when reconnected",
+  "you_are_owed_overall": "You are owed",
+  "you_owe_overall": "You owe",
+  "across_groups": "Across all your groups"
 }

@@ -1,7 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:splitsathi/core/di/service_locator.dart';
 import 'package:splitsathi/features/auth/bloc/auth_event.dart';
 import 'package:splitsathi/features/auth/bloc/auth_state.dart';
 import 'package:splitsathi/features/auth/repository/auth_repository.dart';
+import 'package:splitsathi/features/groups/bloc/group_bloc.dart';
+import 'package:splitsathi/features/notifications/bloc/notification_bloc.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
@@ -73,27 +76,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  // Future<void> _onLogoutRequested(
-  //   AuthLogoutRequested event,
-  //   Emitter<AuthState> emit,
-  // ) async {
-  //   await _authRepository.logout();
-  //   emit(state.copyWith(status: AuthStatus.unauthenticated, user: null));
-  // }
   Future<void> _onLogoutRequested(
     AuthLogoutRequested event,
     Emitter<AuthState> emit,
   ) async {
-    try {
-      await _authRepository.logout();
-      emit(state.copyWith(status: AuthStatus.unauthenticated, clearUser: true));
-    } catch (e) {
-      // Even if repository logout fails, force local state to unauthenticated
-      // so the UI doesn't get stuck, and surface the error for debugging.
-      // ignore: avoid_print
-      print('Logout error: $e');
-      emit(state.copyWith(status: AuthStatus.unauthenticated, clearUser: true));
-    }
+    await getIt<GroupBloc>().resetSubscription();
+    await getIt<NotificationBloc>().resetSubscription();
+
+    await _authRepository.logout();
+    emit(state.copyWith(status: AuthStatus.unauthenticated, user: null));
   }
 
   String _mapErrorToMessage(Object error) {

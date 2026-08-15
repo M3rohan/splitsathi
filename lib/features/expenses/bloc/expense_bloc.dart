@@ -14,6 +14,9 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
       super(const ExpenseState()) {
     on<ExpensesSubscriptionRequested>(_onSubscriptionRequested);
     on<ExpensesUpdated>(_onExpensesUpdated);
+    on<ExpensesErrorOccurred>(
+      (event, emit) => emit(state.copyWith(status: ExpenseStatus.error)),
+    );
     on<ExpenseAddRequested>(_onAddRequested);
   }
 
@@ -27,7 +30,7 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
         .watchExpenses(event.groupId)
         .listen(
           (expenses) => add(ExpensesUpdated(expenses)),
-          onError: (_) => emit(state.copyWith(status: ExpenseStatus.error)),
+          onError: (_) => add(const ExpensesErrorOccurred()),
         );
   }
 

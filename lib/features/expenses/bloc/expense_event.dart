@@ -28,3 +28,7 @@ class ExpenseAddRequested extends ExpenseEvent {
   @override
   List<Object?> get props => [expense];
 }
+
+class ExpensesErrorOccurred extends ExpenseEvent {
+  const ExpensesErrorOccurred();
+}

@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
 import 'package:splitsathi/core/security/biometric_service.dart';
 import 'package:splitsathi/core/theme/theme_cubit.dart';
+import 'package:splitsathi/core/utils/connectivity_cubit.dart';
 import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
 import 'package:splitsathi/features/auth/repository/auth_repository.dart';
 import 'package:splitsathi/features/expenses/bloc/expense_bloc.dart';
@@ -13,6 +14,7 @@ import 'package:splitsathi/features/groups/bloc/group_bloc.dart';
 import 'package:splitsathi/features/groups/cubit/create_group_form_cubit.dart';
 import 'package:splitsathi/features/groups/cubit/group_detail_cubit.dart';
 import 'package:splitsathi/features/groups/repository/group_repository.dart';
+import 'package:splitsathi/features/home/cubit/home_summary_cubit.dart';
 import 'package:splitsathi/features/insights/cubit/insights_cubit.dart';
 import 'package:splitsathi/features/notifications/bloc/notification_bloc.dart';
 import 'package:splitsathi/features/notifications/repository/notification_repository.dart';
@@ -101,5 +103,11 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerFactory<SettingsCubit>(
     () => SettingsCubit(biometricService: getIt<BiometricService>()),
+  );
+
+  getIt.registerLazySingleton<ConnectivityCubit>(() => ConnectivityCubit());
+
+  getIt.registerFactory<HomeSummaryCubit>(
+    () => HomeSummaryCubit(expenseRepository: getIt<ExpenseRepository>()),
   );
 }

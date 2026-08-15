@@ -13,6 +13,7 @@ import 'package:splitsathi/features/groups/bloc/group_bloc.dart';
 import 'package:splitsathi/features/groups/bloc/group_event.dart';
 import 'package:splitsathi/features/groups/bloc/group_state.dart';
 import 'package:splitsathi/features/groups/models/group_model.dart';
+import 'package:splitsathi/features/home/cubit/home_summary_cubit.dart';
 import 'package:splitsathi/features/notifications/bloc/notification_bloc.dart';
 import 'package:splitsathi/features/notifications/bloc/notification_event.dart';
 import 'package:splitsathi/features/notifications/bloc/notification_state.dart';
@@ -29,6 +30,9 @@ class HomeScreen extends StatelessWidget {
       providers: [
         BlocProvider<AuthBloc>.value(value: getIt<AuthBloc>()),
         BlocProvider<GroupBloc>.value(value: getIt<GroupBloc>()),
+        BlocProvider<HomeSummaryCubit>(
+          create: (_) => getIt<HomeSummaryCubit>(),
+        ),
       ],
       child: const _HomeView(),
     );
@@ -56,244 +60,278 @@ class _HomeViewState extends State<_HomeView> {
   @override
   Widget build(final BuildContext context) {
     final user = getIt<AuthBloc>().state.user;
-    final displayName = user?.displayName ?? '';
-    debugPrint('Display Name: "$displayName"');
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('app_name'.tr()),
-        actions: [
-          BlocBuilder<NotificationBloc, NotificationState>(
-            bloc: getIt<NotificationBloc>(),
-            builder: (context, notifState) {
-              return Stack(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.notifications_outlined),
-                    onPressed: () =>
-                        context.pushNamed(AppRoutes.notificationsName),
-                  ),
-
-                  if (notifState.unreadCount > 0)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
-                        ),
-                        child: Text(
-                          '${notifState.unreadCount}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              );
-            },
-          ),
-
-          IconButton(
-            icon: const Icon(Icons.person_outline_rounded),
-            onPressed: () => context.pushNamed(AppRoutes.profileName),
-          ),
-
-          IconButton(
-            icon: const Icon(Icons.logout_rounded),
-            onPressed: () {
-              _confirmLogout(context);
-            },
-          ),
-        ],
-      ),
-      body: StreamBuilder<Map<String, dynamic>?>(
-        stream: getIt<ProfileRepository>().watchProfile(user?.uid ?? ''),
-        builder: (context, asyncSnapshot) {
-          final displayName =
-              asyncSnapshot.data?['name'] as String? ?? user?.displayName ?? '';
-          return RefreshIndicator(
-            onRefresh: () async {
-              final userId = getIt<AuthBloc>().state.user?.uid;
-              if (userId != null) {
-                context.read<GroupBloc>().add(
-                  GroupsSubscriptionRequested(userId),
-                );
-              }
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                        'hi_user'.tr(args: [displayName]),
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      )
-                      .animate()
-                      .fadeIn(duration: 400.ms)
-                      .slideX(begin: -0.1, end: 0),
-
-                  const SizedBox(height: 24),
-
-                  Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(24.0),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              AppTheme.primaryColor,
-                              AppTheme.secondaryColor,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.primaryColor.withValues(
-                                alpha: 0.3,
-                              ),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'total_balance'.tr(),
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.83),
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              '₹0.00',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'settled_up'.tr(),
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.85),
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                      .animate()
-                      .fadeIn(delay: 200.ms, duration: 500.ms)
-                      .scale(
-                        begin: const Offset(0.95, 0.95),
-                        end: const Offset(1, 1),
-                        curve: Curves.easeOut,
-                      ),
-
-                  const SizedBox(height: 32),
-
-                  Text(
-                    'your_groups'.tr(),
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ).animate().fadeIn(delay: 400.ms),
-
-                  const SizedBox(height: 16),
-
-                  BlocBuilder<GroupBloc, GroupState>(
-                    builder: (context, state) {
-                      if (state.status == GroupStatus.loading ||
-                          state.status == GroupStatus.initial) {
-                        return const GroupCardShimmer();
-                      }
-
-                      if (state.status == GroupStatus.error) {
-                        return Container(
-                          padding: EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.errorContainer.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(Icons.error_outline_rounded),
-                              const SizedBox(height: 8),
-                              Text(
-                                'something_went_wrong'.tr(),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 12),
-                              TextButton(
-                                onPressed: () {
-                                  final userId =
-                                      getIt<AuthBloc>().state.user?.uid;
-                                  if (userId != null) {
-                                    context.read<GroupBloc>().add(
-                                      GroupsSubscriptionRequested(userId),
-                                    );
-                                  }
-                                },
-                                child: Text('retry'.tr()),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      if (state.groups.isEmpty) {
-                        return EmptyStateWidget(
-                          title: 'no_groups_yet'.tr(),
-                          subtitle: 'create_group_hint'.tr(),
-                        );
-                      }
-                      return Column(
-                        children: List.generate(state.groups.length, (index) {
-                          final group = state.groups[index];
-                          return _GroupCard(group: group)
-                              .animate()
-                              .fadeIn(
-                                delay: (400 + index * 80).ms,
-                                duration: 400.ms,
-                              )
-                              .slideY(begin: 0.1, end: 0);
-                        }),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
+    final userId = user?.uid ?? '';
+    return BlocListener<GroupBloc, GroupState>(
+      listener: (context, groupState) {
+        if (groupState.status == GroupStatus.loaded) {
+          context.read<HomeSummaryCubit>().updateGroups(
+            groupState.groups,
+            userId,
           );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          context.pushNamed(AppRoutes.createGroupName);
-        },
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('app_name'.tr()),
+          actions: [
+            BlocBuilder<NotificationBloc, NotificationState>(
+              bloc: getIt<NotificationBloc>(),
+              builder: (context, notifState) {
+                return Stack(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.notifications_outlined),
+                      onPressed: () =>
+                          context.pushNamed(AppRoutes.notificationsName),
+                    ),
 
-        icon: const Icon(Icons.add),
-        label: Text('new_group'.tr()),
-      ).animate().fadeIn(delay: 600.ms, curve: Curves.easeOutBack),
+                    if (notifState.unreadCount > 0)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          child: Text(
+                            '${notifState.unreadCount}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+
+            IconButton(
+              icon: const Icon(Icons.person_outline_rounded),
+              onPressed: () => context.pushNamed(AppRoutes.profileName),
+            ),
+
+            IconButton(
+              icon: const Icon(Icons.logout_rounded),
+              onPressed: () {
+                _confirmLogout(context);
+              },
+            ),
+          ],
+        ),
+        body: StreamBuilder<Map<String, dynamic>?>(
+          stream: getIt<ProfileRepository>().watchProfile(user?.uid ?? ''),
+          builder: (context, asyncSnapshot) {
+            final displayName =
+                asyncSnapshot.data?['name'] as String? ??
+                user?.displayName ??
+                '';
+            return RefreshIndicator(
+              onRefresh: () async {
+                final userId = getIt<AuthBloc>().state.user?.uid;
+                if (userId != null) {
+                  context.read<GroupBloc>().add(
+                    GroupsSubscriptionRequested(userId),
+                  );
+                }
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                          'hi_user'.tr(args: [displayName]),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        )
+                        .animate()
+                        .fadeIn(duration: 400.ms)
+                        .slideX(begin: -0.1, end: 0),
+
+                    const SizedBox(height: 24),
+
+                    BlocBuilder<HomeSummaryCubit, HomeSummaryState>(
+                      builder: (context, summaryState) {
+                        final isPositive = summaryState.totalBalance >= 0;
+                        return Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(24.0),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    AppTheme.primaryColor,
+                                    AppTheme.secondaryColor,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.primaryColor.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isPositive
+                                        ? 'you_are_owed_overall'.tr()
+                                        : 'you_owe_overall'.tr(),
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.85,
+                                      ),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  summaryState.isLoading
+                                      ? const SizedBox(
+                                          height: 36,
+                                          width: 36,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Text(
+                                          '₹${summaryState.totalBalance.abs().toStringAsFixed(2)}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 36,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    summaryState.totalBalance.abs() < 0.01
+                                        ? 'settled_up'.tr()
+                                        : 'across_groups'.tr(),
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.85,
+                                      ),
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                            .animate()
+                            .fadeIn(delay: 200.ms, duration: 500.ms)
+                            .scale(
+                              begin: const Offset(0.95, 0.95),
+                              end: const Offset(1, 1),
+                              curve: Curves.easeOut,
+                            );
+                      },
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    Text(
+                      'your_groups'.tr(),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ).animate().fadeIn(delay: 400.ms),
+
+                    const SizedBox(height: 16),
+
+                    BlocBuilder<GroupBloc, GroupState>(
+                      builder: (context, state) {
+                        if (state.status == GroupStatus.loading ||
+                            state.status == GroupStatus.initial) {
+                          return const GroupCardShimmer();
+                        }
+
+                        if (state.status == GroupStatus.error) {
+                          return Container(
+                            padding: EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .errorContainer
+                                  .withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(Icons.error_outline_rounded),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'something_went_wrong'.tr(),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 12),
+                                TextButton(
+                                  onPressed: () {
+                                    final userId =
+                                        getIt<AuthBloc>().state.user?.uid;
+                                    if (userId != null) {
+                                      context.read<GroupBloc>().add(
+                                        GroupsSubscriptionRequested(userId),
+                                      );
+                                    }
+                                  },
+                                  child: Text('retry'.tr()),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        if (state.groups.isEmpty) {
+                          return EmptyStateWidget(
+                            title: 'no_groups_yet'.tr(),
+                            subtitle: 'create_group_hint'.tr(),
+                          );
+                        }
+                        return Column(
+                          children: List.generate(state.groups.length, (index) {
+                            final group = state.groups[index];
+                            return _GroupCard(group: group)
+                                .animate()
+                                .fadeIn(
+                                  delay: (400 + index * 80).ms,
+                                  duration: 400.ms,
+                                )
+                                .slideY(begin: 0.1, end: 0);
+                          }),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            context.pushNamed(AppRoutes.createGroupName);
+          },
+
+          icon: const Icon(Icons.add),
+          label: Text('new_group'.tr()),
+        ).animate().fadeIn(delay: 600.ms, curve: Curves.easeOutBack),
+      ),
     );
   }
 

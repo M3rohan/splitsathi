@@ -39,3 +39,11 @@ class GroupCreateRequested extends GroupEvent {
   @override
   List<Object?> get props => [name, createdBy, memberIds, emoji];
 }
+
+class GroupsErrorOccurred extends GroupEvent {
+  const GroupsErrorOccurred();
+}
+
+class GroupsResetRequested extends GroupEvent {
+  const GroupsResetRequested();
+}

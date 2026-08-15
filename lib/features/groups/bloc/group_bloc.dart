@@ -1,10 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:splitsathi/features/groups/bloc/group_event.dart';
-import 'package:splitsathi/features/groups/bloc/group_state.dart';
-import 'package:splitsathi/features/groups/models/group_model.dart';
-import 'package:splitsathi/features/groups/repository/group_repository.dart';
+import '../models/group_model.dart';
+import '../repository/group_repository.dart';
+import 'group_event.dart';
+import 'group_state.dart';
 
 class GroupBloc extends Bloc<GroupEvent, GroupState> {
   final GroupRepository _groupRepository;
@@ -15,6 +14,8 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
       super(const GroupState()) {
     on<GroupsSubscriptionRequested>(_onSubscriptionRequested);
     on<GroupsUpdated>(_onGroupsUpdated);
+    on<GroupsErrorOccurred>(_onErrorOccurred);
+    on<GroupsResetRequested>(_onResetRequested);
     on<GroupCreateRequested>(_onCreateRequested);
   }
 
@@ -29,7 +30,9 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
         .getUserGroups(event.userId)
         .listen(
           (groups) => add(GroupsUpdated(groups)),
-          onError: (_) => emit(state.copyWith(status: GroupStatus.error)),
+          onError: (_) => add(
+            const GroupsErrorOccurred(),
+          ), // dispatch event, don't emit directly
         );
   }
 
@@ -42,12 +45,19 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
     );
   }
 
+  void _onErrorOccurred(GroupsErrorOccurred event, Emitter<GroupState> emit) {
+    emit(state.copyWith(status: GroupStatus.error));
+  }
+
+  void _onResetRequested(GroupsResetRequested event, Emitter<GroupState> emit) {
+    emit(const GroupState());
+  }
+
   Future<void> _onCreateRequested(
     GroupCreateRequested event,
     Emitter<GroupState> emit,
   ) async {
     emit(state.copyWith(status: GroupStatus.creating));
-
     try {
       await _groupRepository.createGroup(
         name: event.name,
@@ -64,6 +74,13 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
         ),
       );
     }
+  }
+
+  /// Called on logout to stop listening before the auth session is gone
+  Future<void> resetSubscription() async {
+    await _groupsSubscription?.cancel();
+    _groupsSubscription = null;
+    add(const GroupsResetRequested());
   }
 
   @override

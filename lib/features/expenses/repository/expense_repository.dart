@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:splitsathi/features/expenses/models/expense_model.dart';
 
 class ExpenseRepository {
@@ -26,10 +25,6 @@ class ExpenseRepository {
 
   Future<void> addExpense(ExpenseModel expense) async {
     final data = expense.toFirestore();
-
-    print("Current UID: ${FirebaseAuth.instance.currentUser!.uid}");
-    print("Expense Data: $data");
-
     await _expensesRef(expense.groupId).add(data);
   }
 
