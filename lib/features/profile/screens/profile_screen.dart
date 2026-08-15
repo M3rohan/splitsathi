@@ -7,6 +7,7 @@ import 'package:splitsathi/core/di/service_locator.dart';
 import 'package:splitsathi/core/router/app_routes.dart';
 import 'package:splitsathi/core/theme/app_theme.dart';
 import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
+import 'package:splitsathi/features/auth/repository/auth_repository.dart';
 import 'package:splitsathi/features/profile/repository/profile_repository.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -21,11 +22,10 @@ class ProfileScreen extends StatelessWidget {
       body: StreamBuilder<Map<String, dynamic>?>(
         stream: getIt<ProfileRepository>().watchProfile(user?.uid ?? ''),
         builder: (context, snapshot) {
-          final avatarId = snapshot.data?['avatarId'] as String;
+          final avatarId = snapshot.data?['avatarId'] as String?;
           final name =
               snapshot.data?['name'] as String? ?? user?.displayName ?? '';
           final email = snapshot.data?['email'] as String? ?? user?.email ?? '';
-
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
@@ -58,10 +58,26 @@ class ProfileScreen extends StatelessWidget {
                       curve: Curves.easeOutBack,
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      name,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
+                    GestureDetector(
+                      onTap: () =>
+                          _showEditNameDialog(context, user?.uid ?? '', name),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            name,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.edit_outlined,
+                            size: 16,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.5),
+                          ),
+                        ],
                       ),
                     ),
                     Text(email, style: Theme.of(context).textTheme.bodyMedium),
@@ -145,6 +161,41 @@ class ProfileScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  void _showEditNameDialog(
+    BuildContext context,
+    String userId,
+    String currentName,
+  ) {
+    final controller = TextEditingController(text: currentName);
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('edit_name'.tr()),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(labelText: 'full_name'.tr()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () async {
+              final newName = controller.text.trim();
+              if (newName.isNotEmpty) {
+                await getIt<ProfileRepository>().updateName(userId, newName);
+              }
+              if (dialogContext.mounted) Navigator.pop(dialogContext);
+            },
+            child: Text('save'.tr()),
+          ),
+        ],
+      ),
     );
   }
 }

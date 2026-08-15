@@ -81,6 +81,7 @@ class GroupDetailCubit extends Cubit<GroupDetailState> {
         .watchGroup(groupId)
         .listen(
           (group) async {
+            if (isClosed) return;
             if (group == null) {
               emit(state.copyWith(status: GroupDetailStatus.notFound));
               return;
@@ -89,6 +90,7 @@ class GroupDetailCubit extends Cubit<GroupDetailState> {
             final members = await _groupRepository.getMembersInfo(
               group.memberIds,
             );
+            if (isClosed) return;
             emit(
               state.copyWith(
                 status: GroupDetailStatus.loaded,
@@ -99,6 +101,7 @@ class GroupDetailCubit extends Cubit<GroupDetailState> {
             _watchExpenses(groupId, group.memberIds);
           },
           onError: (_) {
+            if (!isClosed) return;
             emit(state.copyWith(status: GroupDetailStatus.error));
           },
         );
@@ -106,29 +109,39 @@ class GroupDetailCubit extends Cubit<GroupDetailState> {
 
   void _watchExpenses(String groupId, List<String> memberIds) {
     _expensesSubscription?.cancel();
-    _expensesSubscription = _expenseRepository.watchExpenses(groupId).listen((
-      expenses,
-    ) {
-      final netBalances = DebtSimplifier.calculateNetBalances(
-        expenses,
-        memberIds,
-      );
+    _expensesSubscription = _expenseRepository
+        .watchExpenses(groupId)
+        .listen(
+          (expenses) {
+            if (isClosed) return;
+            final netBalances = DebtSimplifier.calculateNetBalances(
+              expenses,
+              memberIds,
+            );
 
-      final settlements = DebtSimplifier.simplifyDebts(netBalances);
+            final settlements = DebtSimplifier.simplifyDebts(netBalances);
 
-      final dueRecurring = expenses
-          .where((e) => e.isRecurring && RecurrenceHelper.isDue(e.nextDueDate))
-          .toList();
+            final dueRecurring = expenses
+                .where(
+                  (e) => e.isRecurring && RecurrenceHelper.isDue(e.nextDueDate),
+                )
+                .toList();
 
-      emit(
-        state.copyWith(
-          expenses: expenses,
-          netBalances: netBalances,
-          settlements: settlements,
-          dueRecurringExpenses: dueRecurring,
-        ),
-      );
-    });
+            emit(
+              state.copyWith(
+                expenses: expenses,
+                netBalances: netBalances,
+                settlements: settlements,
+                dueRecurringExpenses: dueRecurring,
+              ),
+            );
+          },
+          onError: (_) {
+            if (!isClosed) {
+              emit(state.copyWith(status: GroupDetailStatus.error));
+            }
+          },
+        );
   }
 
   @override

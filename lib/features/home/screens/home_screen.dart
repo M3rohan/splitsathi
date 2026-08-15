@@ -16,6 +16,9 @@ import 'package:splitsathi/features/groups/models/group_model.dart';
 import 'package:splitsathi/features/notifications/bloc/notification_bloc.dart';
 import 'package:splitsathi/features/notifications/bloc/notification_event.dart';
 import 'package:splitsathi/features/notifications/bloc/notification_state.dart';
+import 'package:splitsathi/features/profile/repository/profile_repository.dart';
+import 'package:splitsathi/widgets/empty_state.dart';
+import 'package:splitsathi/widgets/loading_shimmer.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -112,193 +115,176 @@ class _HomeViewState extends State<_HomeView> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          final userId = getIt<AuthBloc>().state.user?.uid;
-          if (userId != null) {
-            context.read<GroupBloc>().add(GroupsSubscriptionRequested(userId));
-          }
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'hi_user'.tr(args: [displayName]),
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.1, end: 0),
+      body: StreamBuilder<Map<String, dynamic>?>(
+        stream: getIt<ProfileRepository>().watchProfile(user?.uid ?? ''),
+        builder: (context, asyncSnapshot) {
+          final displayName =
+              asyncSnapshot.data?['name'] as String? ?? user?.displayName ?? '';
+          return RefreshIndicator(
+            onRefresh: () async {
+              final userId = getIt<AuthBloc>().state.user?.uid;
+              if (userId != null) {
+                context.read<GroupBloc>().add(
+                  GroupsSubscriptionRequested(userId),
+                );
+              }
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                        'hi_user'.tr(args: [displayName]),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      )
+                      .animate()
+                      .fadeIn(duration: 400.ms)
+                      .slideX(begin: -0.1, end: 0),
 
-              const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-              Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(24.0),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppTheme.primaryColor,
-                          AppTheme.secondaryColor,
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
+                  Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24.0),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppTheme.primaryColor,
+                              AppTheme.secondaryColor,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primaryColor.withValues(
+                                alpha: 0.3,
+                              ),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
-                      ],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'total_balance'.tr(),
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.83),
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              '₹0.00',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'settled_up'.tr(),
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.85),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(delay: 200.ms, duration: 500.ms)
+                      .scale(
+                        begin: const Offset(0.95, 0.95),
+                        end: const Offset(1, 1),
+                        curve: Curves.easeOut,
+                      ),
+
+                  const SizedBox(height: 32),
+
+                  Text(
+                    'your_groups'.tr(),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'total_balance'.tr(),
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.83),
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          '₹0.00',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'settled_up'.tr(),
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.85),
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                  .animate()
-                  .fadeIn(delay: 200.ms, duration: 500.ms)
-                  .scale(
-                    begin: const Offset(0.95, 0.95),
-                    end: const Offset(1, 1),
-                    curve: Curves.easeOut,
-                  ),
+                  ).animate().fadeIn(delay: 400.ms),
 
-              const SizedBox(height: 32),
+                  const SizedBox(height: 16),
 
-              Text(
-                'your_groups'.tr(),
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-              ).animate().fadeIn(delay: 400.ms),
+                  BlocBuilder<GroupBloc, GroupState>(
+                    builder: (context, state) {
+                      if (state.status == GroupStatus.loading ||
+                          state.status == GroupStatus.initial) {
+                        return const GroupCardShimmer();
+                      }
 
-              const SizedBox(height: 16),
-
-              BlocBuilder<GroupBloc, GroupState>(
-                builder: (context, state) {
-                  if (state.status == GroupStatus.loading ||
-                      state.status == GroupStatus.initial) {
-                    return const Padding(
-                      padding: EdgeInsetsGeometry.symmetric(vertical: 40),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-
-                  if (state.status == GroupStatus.error) {
-                    return Container(
-                      padding: EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.errorContainer.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(Icons.error_outline_rounded),
-                          const SizedBox(height: 8),
-                          Text(
-                            'something_went_wrong'.tr(),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 12),
-                          TextButton(
-                            onPressed: () {
-                              final userId = getIt<AuthBloc>().state.user?.uid;
-                              if (userId != null) {
-                                context.read<GroupBloc>().add(
-                                  GroupsSubscriptionRequested(userId),
-                                );
-                              }
-                            },
-                            child: Text('retry'.tr()),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  if (state.groups.isEmpty) {
-                    return Container(
-                      padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest
-                            .withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.groups_rounded,
-                            size: 48,
+                      if (state.status == GroupStatus.error) {
+                        return Container(
+                          padding: EdgeInsets.all(24),
+                          decoration: BoxDecoration(
                             color: Theme.of(
                               context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.3),
+                            ).colorScheme.errorContainer.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'no_groups_yet'.tr(),
-                            style: Theme.of(context).textTheme.bodyMedium,
+                          child: Column(
+                            children: [
+                              Icon(Icons.error_outline_rounded),
+                              const SizedBox(height: 8),
+                              Text(
+                                'something_went_wrong'.tr(),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 12),
+                              TextButton(
+                                onPressed: () {
+                                  final userId =
+                                      getIt<AuthBloc>().state.user?.uid;
+                                  if (userId != null) {
+                                    context.read<GroupBloc>().add(
+                                      GroupsSubscriptionRequested(userId),
+                                    );
+                                  }
+                                },
+                                child: Text('retry'.tr()),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'create_group_hint'.tr(),
-                            style: Theme.of(context).textTheme.bodySmall,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ).animate().fadeIn(delay: 500.ms, duration: 500.ms);
-                  }
-                  return Column(
-                    children: List.generate(state.groups.length, (index) {
-                      final group = state.groups[index];
-                      return _GroupCard(group: group)
-                          .animate()
-                          .fadeIn(
-                            delay: (400 + index * 80).ms,
-                            duration: 400.ms,
-                          )
-                          .slideY(begin: 0.1, end: 0);
-                    }),
-                  );
-                },
+                        );
+                      }
+
+                      if (state.groups.isEmpty) {
+                        return EmptyStateWidget(
+                          title: 'no_groups_yet'.tr(),
+                          subtitle: 'create_group_hint'.tr(),
+                        );
+                      }
+                      return Column(
+                        children: List.generate(state.groups.length, (index) {
+                          final group = state.groups[index];
+                          return _GroupCard(group: group)
+                              .animate()
+                              .fadeIn(
+                                delay: (400 + index * 80).ms,
+                                duration: 400.ms,
+                              )
+                              .slideY(begin: 0.1, end: 0);
+                        }),
+                      );
+                    },
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {

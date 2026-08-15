@@ -41,6 +41,19 @@ class AddExpenseFormCubit extends Cubit<AddExpenseFormState> {
     emit(state.copyWith(splitBetween: current));
   }
 
+  void setSplitType(String type) {
+    emit(state.copyWith(splitType: type, customSplits: {}));
+  }
+
+  void setCustomSplitAmount(String userId, double amount) {
+    final updated = Map<String, double>.from(state.customSplits);
+    updated[userId] = amount;
+    emit(state.copyWith(customSplits: updated));
+  }
+
+  double get customSplitsSum =>
+      state.customSplits.values.fold(0.0, (sum, v) => sum + v);
+
   void toggleRecurring(bool value) {
     emit(state.copyWith(isRecurring: value));
   }
@@ -67,6 +80,19 @@ class AddExpenseFormCubit extends Cubit<AddExpenseFormState> {
       return false;
     }
 
+    if (state.splitType == 'custom') {
+      final sum = customSplitsSum;
+      if ((sum - amount).abs() > 0.01) {
+        emit(
+          state.copyWith(
+            errorMessage:
+                'Custom split amounts (₹${sum.toStringAsFixed(2)}) must add up to the total (₹${amount.toStringAsFixed(2)})',
+          ),
+        );
+        return false;
+      }
+    }
+
     emit(state.copyWith(isSubmitting: true, errorMessage: null));
 
     try {
@@ -77,7 +103,8 @@ class AddExpenseFormCubit extends Cubit<AddExpenseFormState> {
         amount: amount,
         paidBy: state.paidBy!,
         splitBetween: state.splitBetween,
-        splitType: 'equal',
+        splitType: state.splitType,
+        customSplits: state.splitType == 'custom' ? state.customSplits : null,
         category: state.category,
         isRecurring: state.isRecurring,
         recurrenceFrequency: state.isRecurring

@@ -120,7 +120,7 @@ class _LoginViewState extends State<_LoginView> {
                           alignment: Alignment.centerRight,
                           child: TextButton(
                             onPressed: () {
-                              context.goNamed(AppRoutes.forgotPasswordName);
+                              context.pushNamed(AppRoutes.forgotPasswordName);
                             },
                             child: Text('forgot_password'.tr()),
                           ),

@@ -4,6 +4,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:splitsathi/core/constants/group_icons.dart';
+import 'package:splitsathi/core/security/biometric_guard.dart';
+import 'package:splitsathi/features/expenses/repository/expense_repository.dart';
+import 'package:splitsathi/features/groups/repository/group_repository.dart';
+import 'package:splitsathi/widgets/empty_state.dart';
 import '../cubit/group_detail_cubit.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/theme/app_theme.dart';
@@ -82,6 +86,34 @@ class _GroupDetailView extends StatelessWidget {
                   AppRoutes.insightsName,
                   pathParameters: {'groupId': group.id},
                 ),
+              ),
+              PopupMenuButton<String>(
+                onSelected: (value) async {
+                  if (value == 'delete') {
+                    final allowed = await BiometricGuard.checkAccess(
+                      reason: 'Authenticate to delete this group',
+                    );
+                    if (!allowed) return;
+                    if (context.mounted) _confirmDeleteGroup(context, group.id);
+                  } else if (value == 'leave') {
+                    _confirmLeaveGroup(context, group.id, currentUserId);
+                  }
+                },
+                itemBuilder: (context) {
+                  final isCreator = currentUserId == group.createdBy;
+                  return [
+                    if (!isCreator)
+                      PopupMenuItem(
+                        value: 'leave',
+                        child: Text('leave_group'.tr()),
+                      ),
+                    if (isCreator)
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Text('delete_group'.tr()),
+                      ),
+                  ];
+                },
               ),
             ],
           ),
@@ -245,6 +277,9 @@ class _GroupDetailView extends StatelessWidget {
                 ...List.generate(state.members.length, (index) {
                   final member = state.members[index];
                   final isYou = member['uid'] == currentUserId;
+                  final isCreator = member['uid'] == group.createdBy;
+                  final currentUserIsCreator = currentUserId == group.createdBy;
+
                   return Container(
                         margin: const EdgeInsets.only(bottom: 10),
                         padding: const EdgeInsets.all(14),
@@ -275,12 +310,33 @@ class _GroupDetailView extends StatelessWidget {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Text(
-                                isYou
-                                    ? '${member['name'] ?? ''} (${'you'.tr()})'
-                                    : (member['name'] ?? member['email'] ?? ''),
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(fontWeight: FontWeight.w500),
+                              child: Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      isYou
+                                          ? '${member['name'] ?? ''} (${'you'.tr()})'
+                                          : (member['name'] ??
+                                                member['email'] ??
+                                                ''),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (isCreator) ...[
+                                    const SizedBox(width: 6),
+                                    Icon(
+                                      Icons.star_rounded,
+                                      size: 14,
+                                      color: Colors.amber[700],
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
                             if (state.netBalances[member['uid']] != null)
@@ -292,6 +348,20 @@ class _GroupDetailView extends StatelessWidget {
                                   color: state.netBalances[member['uid']]! >= 0
                                       ? Colors.green
                                       : Colors.red,
+                                ),
+                              ),
+
+                            if (currentUserIsCreator && !isYou && !isCreator)
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.person_remove_outlined,
+                                  size: 18,
+                                ),
+                                onPressed: () => _confirmRemoveMember(
+                                  context,
+                                  group.id,
+                                  member['uid'],
+                                  member['name'] ?? '',
                                 ),
                               ),
                           ],
@@ -315,89 +385,82 @@ class _GroupDetailView extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 if (state.expenses.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest
-                          .withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.receipt_long_rounded,
-                          size: 44,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.3),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'no_expenses_added'.tr(),
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ],
-                    ),
-                  ).animate().fadeIn(delay: 600.ms)
+                  EmptyStateWidget(title: 'no_expenses_added'.tr(), size: 100)
                 else
                   ...List.generate(state.expenses.length, (index) {
                     final expense = state.expenses[index];
                     final payerName = nameFor(expense.paidBy);
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest
-                            .withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryColor.withValues(
-                                alpha: 0.12,
+                    return GestureDetector(
+                      onLongPress: () async {
+                        final allowed = await BiometricGuard.checkAccess(
+                          reason: 'Authenticate to delete this expense',
+                        );
+                        if (!allowed) return;
+                        if (context.mounted) {
+                          await getIt<ExpenseRepository>().deleteExpense(
+                            group.id,
+                            expense.id,
+                          );
+                        }
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryColor.withValues(
+                                  alpha: 0.12,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              borderRadius: BorderRadius.circular(10),
+                              child: Icon(
+                                ExpenseCategories.iconForId(expense.category),
+                                color: AppTheme.primaryColor,
+                                size: 20,
+                              ),
                             ),
-                            child: Icon(
-                              ExpenseCategories.iconForId(expense.category),
-                              color: AppTheme.primaryColor,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  expense.description,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    expense.description,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  'paid_by_name'.tr(args: [payerName]),
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
+                                  Text(
+                                    'paid_by_name'.tr(args: [payerName]),
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          Text(
-                            '₹${expense.amount.toStringAsFixed(2)}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ).animate().fadeIn(delay: (600 + index * 60).ms);
+                            Text(
+                              '₹${expense.amount.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ).animate().fadeIn(delay: (600 + index * 60).ms),
+                    );
                   }),
               ],
             ),
@@ -421,6 +484,88 @@ class _GroupDetailView extends StatelessWidget {
           ).animate().scale(delay: 700.ms, curve: Curves.easeOutBack),
         );
       },
+    );
+  }
+
+  void _confirmDeleteGroup(BuildContext context, String groupId) {
+    final errorColor = Theme.of(context).colorScheme.error;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('delete_group'.tr()),
+        content: Text('delete_group_confirm'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              context.goNamed(AppRoutes.homeName);
+              await getIt<GroupRepository>().deleteGroup(groupId);
+            },
+            child: Text('delete'.tr(), style: TextStyle(color: errorColor)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmRemoveMember(
+    BuildContext context,
+    String groupId,
+    String memberId,
+    String memberName,
+  ) {
+    final errorColor = Theme.of(context).colorScheme.error;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('remove_member'.tr()),
+        content: Text('remove_member_confirm'.tr(args: [memberName])),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await getIt<GroupRepository>().removeMemberFromGroup(
+                groupId,
+                memberId,
+              );
+            },
+            child: Text('remove'.tr(), style: TextStyle(color: errorColor)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmLeaveGroup(BuildContext context, String groupId, String userId) {
+    final errorColor = Theme.of(context).colorScheme.error;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('leave_group'.tr()),
+        content: Text('leave_group_confirm'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () async {
+              final navigator = context;
+              navigator.goNamed(AppRoutes.homeName);
+              await getIt<GroupRepository>().leaveGroup(groupId, userId);
+            },
+            child: Text('leave'.tr(), style: TextStyle(color: errorColor)),
+          ),
+        ],
+      ),
     );
   }
 }

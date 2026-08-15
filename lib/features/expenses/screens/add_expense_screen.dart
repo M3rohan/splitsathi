@@ -1,10 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 import 'package:splitsathi/core/constants/expense_categories.dart';
 import 'package:splitsathi/core/di/service_locator.dart';
 import 'package:splitsathi/core/theme/app_theme.dart';
@@ -229,25 +229,23 @@ class _AddExpenseViewState extends State<_AddExpenseView> {
                   const SizedBox(height: 12),
 
                   BlocBuilder<AddExpenseFormCubit, AddExpenseFormState>(
-                    buildWhen: (p, c) => p.splitBetween != c.splitBetween,
+                    buildWhen: (p, c) => p.splitType != c.splitType,
                     builder: (context, formState) {
-                      return Column(
-                        children: widget.members.map((m) {
-                          final uid = m['uid'] as String;
-                          final isChecked = formState.splitBetween.contains(
-                            uid,
-                          );
-
-                          return CheckboxListTile(
-                            value: isChecked,
-                            onChanged: (_) => context
-                                .read<AddExpenseFormCubit>()
-                                .toggleSplitMember(uid),
-                            title: Text(_nameFor(uid)),
-                            contentPadding: EdgeInsets.zero,
-                            controlAffinity: ListTileControlAffinity.leading,
-                          );
-                        }).toList(),
+                      return SegmentedButton<String>(
+                        segments: [
+                          ButtonSegment(
+                            value: 'equal',
+                            label: Text('split_equally'.tr()),
+                          ),
+                          ButtonSegment(
+                            value: 'custom',
+                            label: Text('split_custom'.tr()),
+                          ),
+                        ],
+                        selected: {formState.splitType},
+                        onSelectionChanged: (selection) => context
+                            .read<AddExpenseFormCubit>()
+                            .setSplitType(selection.first),
                       );
                     },
                   ),
@@ -255,21 +253,99 @@ class _AddExpenseViewState extends State<_AddExpenseView> {
                   const SizedBox(height: 12),
 
                   BlocBuilder<AddExpenseFormCubit, AddExpenseFormState>(
-                    buildWhen: (p, c) => p.splitBetween != c.splitBetween,
                     builder: (context, formState) {
-                      if (formState.splitBetween.isEmpty) {
-                        return const SizedBox.shrink();
+                      if (formState.splitType == 'equal') {
+                        return Column(
+                          children: widget.members.map((m) {
+                            final uid = m['uid'] as String;
+                            final isChecked = formState.splitBetween.contains(
+                              uid,
+                            );
+                            return CheckboxListTile(
+                              value: isChecked,
+                              onChanged: (_) => context
+                                  .read<AddExpenseFormCubit>()
+                                  .toggleSplitMember(uid),
+                              title: Text(_nameFor(uid)),
+                              contentPadding: EdgeInsets.zero,
+                              controlAffinity: ListTileControlAffinity.leading,
+                            );
+                          }).toList(),
+                        );
                       }
-                      return Text(
-                        'split_hint'.tr(
-                          args: [formState.splitBetween.length.toString()],
-                        ),
-                        style: Theme.of(context).textTheme.bodySmall,
+
+                      // Custom split view
+                      final amountValue =
+                          double.tryParse(
+                            _formKey.currentState?.fields['amount']?.value
+                                    ?.toString() ??
+                                '',
+                          ) ??
+                          0.0;
+                      final cubit = context.read<AddExpenseFormCubit>();
+                      final enteredSum = cubit.customSplitsSum;
+                      final remaining = amountValue - enteredSum;
+                      final isBalanced = remaining.abs() < 0.01;
+
+                      return Column(
+                        children: [
+                          ...widget.members.map((m) {
+                            final uid = m['uid'] as String;
+                            return Padding(
+                              padding: const EdgeInsetsGeometry.only(
+                                bottom: 10,
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(child: Text(_nameFor(uid))),
+                                  SizedBox(
+                                    width: 110,
+                                    child: TextFormField(
+                                      decoration: const InputDecoration(
+                                        prefixText: '₹',
+                                        isDense: true,
+                                      ),
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                            decimal: true,
+                                          ),
+                                      onChanged: (value) {
+                                        final parsed =
+                                            double.tryParse(value) ?? 0.0;
+                                        cubit.setCustomSplitAmount(uid, parsed);
+                                        setState(() {});
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'remaining'.tr(),
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              Text(
+                                '₹${remaining.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: isBalanced
+                                      ? Colors.green
+                                      : Colors.orange,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       );
                     },
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
                   BlocBuilder<AddExpenseFormCubit, AddExpenseFormState>(
                     buildWhen: (p, c) =>
@@ -372,9 +448,34 @@ class _AddExpenseViewState extends State<_AddExpenseView> {
       actorUserId: currentUser?.uid ?? '',
     );
     if (success && context.mounted) {
-      if (context.canPop()) {
-        context.pop();
-      }
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: SizedBox(
+              height: 300,
+              child: Lottie.asset(
+                'assets/animations/success.json',
+                repeat: false,
+                onLoaded: (composition) {
+                  Future.delayed(composition.duration, () {
+                    if (dialogContext.mounted) {
+                      Navigator.of(dialogContext).pop();
+                    }
+                  });
+                },
+              ),
+            ),
+          );
+        },
+      ).then((_) {
+        if (context.mounted && context.canPop()) {
+          context.pop();
+        }
+      });
     }
   }
 }

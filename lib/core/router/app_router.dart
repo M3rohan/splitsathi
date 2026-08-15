@@ -5,6 +5,7 @@ import 'package:splitsathi/core/router/app_routes.dart';
 import 'package:splitsathi/core/router/route_transitions.dart';
 import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
 import 'package:splitsathi/features/auth/bloc/auth_state.dart';
+import 'package:splitsathi/features/auth/screens/forgot_password_screen.dart';
 import 'package:splitsathi/features/auth/screens/login_screen.dart';
 import 'package:splitsathi/features/auth/screens/signup_screen.dart';
 import 'package:splitsathi/features/expenses/screens/add_expense_screen.dart';
@@ -28,21 +29,22 @@ class AppRouter {
       final authState = getIt<AuthBloc>().state;
       final isAuthenticated = authState.status == AuthStatus.authenticated;
       final isGoingToSplash = state.matchedLocation == AppRoutes.splash;
-      final isGoingToAuth =
+      final isGoingToPublicAuthRoute =
           state.matchedLocation == AppRoutes.login ||
-          state.matchedLocation == AppRoutes.signup;
+          state.matchedLocation == AppRoutes.signup ||
+          state.matchedLocation == AppRoutes.forgotPassword;
 
       // Let splash screen handle its own initial routing logic
       if (isGoingToSplash) return null;
 
       // Logged in but trying to visit login/signup → send to home
-      if (isAuthenticated && isGoingToAuth) return AppRoutes.home;
+      if (isAuthenticated && isGoingToPublicAuthRoute) return AppRoutes.home;
 
       // Not logged in and trying to visit a protected route → send to login
       if (!isAuthenticated &&
           authState.status != AuthStatus.initial &&
           authState.status != AuthStatus.loading &&
-          !isGoingToAuth) {
+          !isGoingToPublicAuthRoute) {
         return AppRoutes.login;
       }
 
@@ -173,6 +175,16 @@ class AppRouter {
             child: InsightsScreen(groupId: groupId),
           );
         },
+      ),
+
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        name: AppRoutes.forgotPasswordName,
+        pageBuilder: (context, state) => buildPageWithTransition(
+          context: context,
+          state: state,
+          child: const ForgotPasswordScreen(),
+        ),
       ),
     ],
   );

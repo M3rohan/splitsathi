@@ -93,4 +93,10 @@ class GroupRepository {
 
     return snapshot.docs.map((doc) => {'uid': doc.id, ...doc.data()}).toList();
   }
+
+  Future<void> leaveGroup(String groupId, String userId) async {
+    await _groupsRef.doc(groupId).update({
+      'memberIds': FieldValue.arrayRemove([userId]),
+    });
+  }
 }
