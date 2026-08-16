@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:splitsathi/core/security/developer_mode_guard.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
 import 'core/router/app_router.dart';
@@ -20,17 +21,24 @@ class SplitSathiApp extends StatelessWidget {
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
           return _ConnectivityListener(
-            child: MaterialApp.router(
-              title: 'SplitSathi',
-              debugShowCheckedModeBanner: false,
-              scaffoldMessengerKey: scaffoldMessengerKey,
-              theme: AppTheme.lightTheme,
-              darkTheme: AppTheme.darkTheme,
-              themeMode: themeMode,
-              localizationsDelegates: context.localizationDelegates,
-              supportedLocales: context.supportedLocales,
-              locale: context.locale,
-              routerConfig: AppRouter.router,
+            child: DeveloperModeGuard(
+              child: MaterialApp.router(
+                title: 'SplitSathi',
+                debugShowCheckedModeBanner: false,
+                scaffoldMessengerKey: scaffoldMessengerKey,
+                theme: AppTheme.lightTheme,
+                darkTheme: AppTheme.darkTheme,
+                themeMode: themeMode,
+                localizationsDelegates: context.localizationDelegates,
+                supportedLocales: context.supportedLocales,
+                locale: context.locale,
+                routerConfig: AppRouter.router,
+                // builder: (context, child) {
+                //   return DeveloperModeGuard(
+                //     child: child ?? const SizedBox.shrink(),
+                //   );
+                // },
+              ),
             ),
           );
         },

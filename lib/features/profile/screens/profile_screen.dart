@@ -2,12 +2,15 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:splitsathi/core/constants/avatar_options.dart';
 import 'package:splitsathi/core/di/service_locator.dart';
 import 'package:splitsathi/core/router/app_routes.dart';
 import 'package:splitsathi/core/theme/app_theme.dart';
 import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
+import 'package:splitsathi/features/auth/bloc/auth_event.dart';
 import 'package:splitsathi/features/profile/repository/profile_repository.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -88,6 +91,26 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.settings_outlined,
                 title: 'settings'.tr(),
                 onTap: () => context.pushNamed(AppRoutes.settingsName),
+              ),
+              _SettingsTile(
+                icon: Icons.info_outline_rounded,
+                title: 'about_us'.tr(),
+                onTap: () => context.pushNamed(AppRoutes.aboutUsName),
+              ),
+              _SettingsTile(
+                icon: Icons.star_outline_rounded,
+                title: 'rate_us'.tr(),
+                onTap: () => _launchPlayStoreReview,
+              ),
+              _SettingsTile(
+                icon: Icons.share_outlined,
+                title: 'share_app'.tr(),
+                onTap: _shareApp,
+              ),
+              _SettingsTile(
+                icon: Icons.logout_rounded,
+                title: 'logout'.tr(),
+                onTap: () => _confirmLogout(context),
               ),
             ],
           );
@@ -192,6 +215,53 @@ class ProfileScreen extends StatelessWidget {
               if (dialogContext.mounted) Navigator.pop(dialogContext);
             },
             child: Text('save'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _launchPlayStoreReview() async {
+    const packageName = 'com.rohan.splitsathi';
+    final marketUri = Uri.parse('market://details?id=$packageName');
+    final webUri = Uri.parse(
+      'https://play.google.com/store/apps/details?id=$packageName',
+    );
+
+    if (await canLaunchUrl(marketUri)) {
+      await launchUrl(marketUri);
+    } else {
+      await launchUrl(webUri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _shareApp() async {
+    const packageName = 'com.rohan.splitsathi';
+    await Share.share(
+      'Check out SplitSathi — split expenses with friends easily!\nhttps://play.google.com/store/apps/details?id=$packageName',
+    );
+  }
+
+  void _confirmLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('logout'.tr()),
+        content: Text('logout_confirm'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              getIt<AuthBloc>().add(const AuthLogoutRequested());
+            },
+            child: Text(
+              'logout'.tr(),
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           ),
         ],
       ),

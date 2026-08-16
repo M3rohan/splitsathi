@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
 import 'package:splitsathi/core/security/biometric_service.dart';
 import 'package:splitsathi/core/theme/theme_cubit.dart';
+import 'package:splitsathi/core/utils/app_info_service.dart';
 import 'package:splitsathi/core/utils/connectivity_cubit.dart';
 import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
 import 'package:splitsathi/features/auth/repository/auth_repository.dart';
@@ -107,7 +108,9 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerLazySingleton<ConnectivityCubit>(() => ConnectivityCubit());
 
-  getIt.registerFactory<HomeSummaryCubit>(
+  getIt.registerLazySingleton<HomeSummaryCubit>(
     () => HomeSummaryCubit(expenseRepository: getIt<ExpenseRepository>()),
   );
+
+  getIt.registerLazySingleton<AppInfoService>(() => AppInfoService());
 }

@@ -30,9 +30,7 @@ class HomeScreen extends StatelessWidget {
       providers: [
         BlocProvider<AuthBloc>.value(value: getIt<AuthBloc>()),
         BlocProvider<GroupBloc>.value(value: getIt<GroupBloc>()),
-        BlocProvider<HomeSummaryCubit>(
-          create: (_) => getIt<HomeSummaryCubit>(),
-        ),
+        BlocProvider<HomeSummaryCubit>.value(value: getIt<HomeSummaryCubit>()),
       ],
       child: const _HomeView(),
     );

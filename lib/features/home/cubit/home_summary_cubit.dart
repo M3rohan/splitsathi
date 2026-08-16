@@ -55,20 +55,36 @@ class HomeSummaryCubit extends Cubit<HomeSummaryState> {
 
       _subscriptions[group.id] = _expenseRepository
           .watchExpenses(group.id)
-          .listen((expenses) {
-            final balances = DebtSimplifier.calculateNetBalances(
-              expenses,
-              group.memberIds,
-            );
-            _groupBalances[group.id] = balances[currentUserId] ?? 0.0;
-            _emitTotal();
-          });
+          .listen(
+            (expenses) {
+              final balances = DebtSimplifier.calculateNetBalances(
+                expenses,
+                group.memberIds,
+              );
+              _groupBalances[group.id] = balances[currentUserId] ?? 0.0;
+              _emitTotal();
+            },
+            onError: (_) {
+              _groupBalances.remove(group.id);
+              _emitTotal();
+            },
+          );
     }
   }
 
   void _emitTotal() {
+    if (isClosed) return;
     final total = _groupBalances.values.fold(0.0, (sum, v) => sum + v);
     emit(HomeSummaryState(totalBalance: total, isLoading: false));
+  }
+
+  Future<void> resetSubscriptions() async {
+    for (final sub in _subscriptions.values) {
+      await sub.cancel();
+    }
+    _subscriptions.clear();
+    _groupBalances.clear();
+    if (!isClosed) emit(const HomeSummaryState());
   }
 
   @override

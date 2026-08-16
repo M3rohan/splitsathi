@@ -17,6 +17,7 @@ class AppRoutes {
 
   static const String profile = '/profile';
   static const String settings = '/settings';
+  static const String aboutUs = '/about-us';
   static const String notifications = '/notifications';
 
   // ---------- Route Names (used for context.goNamed()) ----------
@@ -37,6 +38,7 @@ class AppRoutes {
 
   static const String profileName = 'profile';
   static const String settingsName = 'settings';
+  static const String aboutUsName = 'aboutUs';
   static const String notificationsName = 'notifications';
 
   // ---------- Helper methods for building dynamic paths ----------

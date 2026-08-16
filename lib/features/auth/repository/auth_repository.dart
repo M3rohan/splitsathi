@@ -73,4 +73,43 @@ class AuthRepository {
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
+
+  Future<void> reauthenticate(String password) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null || user.email == null) {
+      throw Exception('No User logged in');
+    }
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: password,
+    );
+    await user.reauthenticateWithCredential(credential);
+  }
+
+  Future<void> deleteAccount() async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) return;
+
+    final groupsSnapshot = await _firebaseFirestore
+        .collection('groups')
+        .where('memberIds', arrayContains: user.uid)
+        .get();
+
+    final batch = _firebaseFirestore.batch();
+
+    for (final doc in groupsSnapshot.docs) {
+      final data = doc.data();
+      final createdBy = data['createdBy'] as String?;
+      if (createdBy == user.uid) continue;
+      batch.update(doc.reference, {
+        'memberIds': FieldValue.arrayRemove([user.uid]),
+      });
+    }
+
+    await batch.commit();
+
+    await _firebaseFirestore.collection('users').doc(user.uid).delete();
+
+    await user.delete();
+  }
 }

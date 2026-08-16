@@ -64,6 +64,8 @@ dependencies:
 
   timeago: ^3.7.0
 
+  package_info_plus: ^8.1.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

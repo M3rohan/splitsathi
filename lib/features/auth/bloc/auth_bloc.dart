@@ -4,6 +4,7 @@ import 'package:splitsathi/features/auth/bloc/auth_event.dart';
 import 'package:splitsathi/features/auth/bloc/auth_state.dart';
 import 'package:splitsathi/features/auth/repository/auth_repository.dart';
 import 'package:splitsathi/features/groups/bloc/group_bloc.dart';
+import 'package:splitsathi/features/home/cubit/home_summary_cubit.dart';
 import 'package:splitsathi/features/notifications/bloc/notification_bloc.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -82,6 +83,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     await getIt<GroupBloc>().resetSubscription();
     await getIt<NotificationBloc>().resetSubscription();
+    await getIt<HomeSummaryCubit>().resetSubscriptions();
 
     await _authRepository.logout();
     emit(state.copyWith(status: AuthStatus.unauthenticated, user: null));

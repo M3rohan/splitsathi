@@ -15,13 +15,18 @@ import 'package:splitsathi/features/home/screens/home_screen.dart';
 import 'package:splitsathi/features/insights/screens/insights_screen.dart';
 import 'package:splitsathi/features/notifications/screens/notifications_screen.dart';
 import 'package:splitsathi/features/onboarding/screens/splash_screen.dart';
+import 'package:splitsathi/features/profile/screens/about_us_screen.dart';
 import 'package:splitsathi/features/profile/screens/profile_screen.dart';
 import 'package:splitsathi/features/profile/screens/settings_screen.dart';
 
 class AppRouter {
   AppRouter._();
 
+  static final GlobalKey<NavigatorState> rootNavigatorKey =
+      GlobalKey<NavigatorState>();
+
   static final GoRouter router = GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
     refreshListenable: GoRouterRefreshStream(getIt<AuthBloc>().stream),
@@ -184,6 +189,16 @@ class AppRouter {
           context: context,
           state: state,
           child: const ForgotPasswordScreen(),
+        ),
+      ),
+
+      GoRoute(
+        path: AppRoutes.aboutUs,
+        name: AppRoutes.aboutUsName,
+        pageBuilder: (context, state) => buildPageWithTransition(
+          context: context,
+          state: state,
+          child: const AboutUsScreen(),
         ),
       ),
     ],
