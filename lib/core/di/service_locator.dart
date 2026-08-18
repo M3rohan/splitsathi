@@ -21,6 +21,7 @@ import 'package:splitsathi/features/notifications/bloc/notification_bloc.dart';
 import 'package:splitsathi/features/notifications/repository/notification_repository.dart';
 import 'package:splitsathi/features/profile/cubit/settings_cubit.dart';
 import 'package:splitsathi/features/profile/repository/profile_repository.dart';
+import 'package:splitsathi/services/analytics_service.dart';
 
 final getIt = GetIt.instance;
 Future<void> setupServiceLocator() async {
@@ -113,4 +114,6 @@ Future<void> setupServiceLocator() async {
   );
 
   getIt.registerLazySingleton<AppInfoService>(() => AppInfoService());
+
+  getIt.registerLazySingleton<AnalyticsService>(() => AnalyticsService());
 }

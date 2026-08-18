@@ -7,6 +7,7 @@ import 'package:splitsathi/core/constants/group_icons.dart';
 import 'package:splitsathi/core/security/biometric_guard.dart';
 import 'package:splitsathi/features/expenses/repository/expense_repository.dart';
 import 'package:splitsathi/features/groups/repository/group_repository.dart';
+import 'package:splitsathi/services/analytics_service.dart';
 import 'package:splitsathi/widgets/empty_state.dart';
 import '../cubit/group_detail_cubit.dart';
 import '../../../core/di/service_locator.dart';
@@ -504,6 +505,7 @@ class _GroupDetailView extends StatelessWidget {
               Navigator.pop(dialogContext);
               context.goNamed(AppRoutes.homeName);
               await getIt<GroupRepository>().deleteGroup(groupId);
+              getIt<AnalyticsService>().logGroupDeleted();
             },
             child: Text('delete'.tr(), style: TextStyle(color: errorColor)),
           ),
@@ -536,6 +538,7 @@ class _GroupDetailView extends StatelessWidget {
                 groupId,
                 memberId,
               );
+              getIt<AnalyticsService>().logMemberRemoved();
             },
             child: Text('remove'.tr(), style: TextStyle(color: errorColor)),
           ),
@@ -561,6 +564,7 @@ class _GroupDetailView extends StatelessWidget {
               final navigator = context;
               navigator.goNamed(AppRoutes.homeName);
               await getIt<GroupRepository>().leaveGroup(groupId, userId);
+              getIt<AnalyticsService>().logGroupLeft();
             },
             child: Text('leave'.tr(), style: TextStyle(color: errorColor)),
           ),

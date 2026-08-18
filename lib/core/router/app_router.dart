@@ -18,6 +18,7 @@ import 'package:splitsathi/features/onboarding/screens/splash_screen.dart';
 import 'package:splitsathi/features/profile/screens/about_us_screen.dart';
 import 'package:splitsathi/features/profile/screens/profile_screen.dart';
 import 'package:splitsathi/features/profile/screens/settings_screen.dart';
+import 'package:splitsathi/services/analytics_service.dart';
 
 class AppRouter {
   AppRouter._();
@@ -29,6 +30,7 @@ class AppRouter {
     navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
+    observers: [getIt<AnalyticsService>().observer],
     refreshListenable: GoRouterRefreshStream(getIt<AuthBloc>().stream),
     redirect: (context, state) {
       final authState = getIt<AuthBloc>().state;

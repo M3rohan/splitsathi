@@ -1,9 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:splitsathi/core/di/service_locator.dart';
 import 'package:splitsathi/core/utils/recurrence_helper.dart';
 import 'package:splitsathi/features/expenses/cubit/add_expense_form_state.dart';
 import 'package:splitsathi/features/expenses/models/expense_model.dart';
 import 'package:splitsathi/features/expenses/repository/expense_repository.dart';
 import 'package:splitsathi/features/notifications/repository/notification_repository.dart';
+import 'package:splitsathi/services/analytics_service.dart';
 
 class AddExpenseFormCubit extends Cubit<AddExpenseFormState> {
   final ExpenseRepository _expenseRepository;
@@ -115,6 +117,11 @@ class AddExpenseFormCubit extends Cubit<AddExpenseFormState> {
             : null,
       );
       await _expenseRepository.addExpense(expense);
+      getIt<AnalyticsService>().logExpenseAdded(
+        category: state.category,
+        splitType: state.splitType,
+        isRecurring: state.isRecurring,
+      );
 
       _notificationRepository.notifyNewExpense(
         memberIds: allMemberIds,

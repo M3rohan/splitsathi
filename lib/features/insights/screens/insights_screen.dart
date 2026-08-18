@@ -7,6 +7,7 @@ import 'package:splitsathi/core/constants/expense_categories.dart';
 import 'package:splitsathi/core/di/service_locator.dart';
 import 'package:splitsathi/core/theme/app_theme.dart';
 import 'package:splitsathi/features/insights/cubit/insights_cubit.dart';
+import 'package:splitsathi/services/analytics_service.dart';
 
 const List<Color> _chartColors = [
   AppTheme.primaryColor,
@@ -36,6 +37,7 @@ class _InsightsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    getIt<AnalyticsService>().logInsightsViewed();
     return Scaffold(
       appBar: AppBar(title: Text('insights'.tr())),
       body: BlocBuilder<InsightsCubit, InsightsState>(

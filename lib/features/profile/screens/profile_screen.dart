@@ -10,6 +10,7 @@ import 'package:splitsathi/core/theme/app_theme.dart';
 import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
 import 'package:splitsathi/features/auth/bloc/auth_event.dart';
 import 'package:splitsathi/features/profile/repository/profile_repository.dart';
+import 'package:splitsathi/services/analytics_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -149,6 +150,7 @@ class ProfileScreen extends StatelessWidget {
                   return GestureDetector(
                     onTap: () async {
                       await getIt<ProfileRepository>().updateAvatar(userId, id);
+                      getIt<AnalyticsService>().logAvatarChanged();
                       if (sheetContext.mounted) Navigator.pop(sheetContext);
                     },
                     child: Container(
@@ -230,8 +232,10 @@ class ProfileScreen extends StatelessWidget {
 
     if (await canLaunchUrl(marketUri)) {
       await launchUrl(marketUri);
+      getIt<AnalyticsService>().logAppRated();
     } else {
       await launchUrl(webUri, mode: LaunchMode.externalApplication);
+      getIt<AnalyticsService>().logAppRated();
     }
   }
 
@@ -240,6 +244,7 @@ class ProfileScreen extends StatelessWidget {
     await Share.share(
       'Check out SplitSathi — split expenses with friends easily!\nhttps://play.google.com/store/apps/details?id=$packageName',
     );
+    getIt<AnalyticsService>().logAppShared();
   }
 
   void _confirmLogout(BuildContext context) {

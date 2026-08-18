@@ -33,11 +33,6 @@ class SplitSathiApp extends StatelessWidget {
                 supportedLocales: context.supportedLocales,
                 locale: context.locale,
                 routerConfig: AppRouter.router,
-                // builder: (context, child) {
-                //   return DeveloperModeGuard(
-                //     child: child ?? const SizedBox.shrink(),
-                //   );
-                // },
               ),
             ),
           );

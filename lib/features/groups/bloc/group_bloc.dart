@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:splitsathi/core/di/service_locator.dart';
+import 'package:splitsathi/services/analytics_service.dart';
 import '../models/group_model.dart';
 import '../repository/group_repository.dart';
 import 'group_event.dart';
@@ -66,6 +68,9 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
         emoji: event.emoji,
       );
       emit(state.copyWith(status: GroupStatus.created));
+      getIt<AnalyticsService>().logGroupCreated(
+        memberCount: event.memberIds.length,
+      );
     } catch (e) {
       emit(
         state.copyWith(

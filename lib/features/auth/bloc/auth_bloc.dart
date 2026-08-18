@@ -6,6 +6,7 @@ import 'package:splitsathi/features/auth/repository/auth_repository.dart';
 import 'package:splitsathi/features/groups/bloc/group_bloc.dart';
 import 'package:splitsathi/features/home/cubit/home_summary_cubit.dart';
 import 'package:splitsathi/features/notifications/bloc/notification_bloc.dart';
+import 'package:splitsathi/services/analytics_service.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
@@ -43,6 +44,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
       );
       emit(state.copyWith(status: AuthStatus.authenticated, user: user));
+      getIt<AnalyticsService>().logSignUp();
+      getIt<AnalyticsService>().setUserId(user?.uid);
     } catch (e) {
       emit(
         state.copyWith(
@@ -67,6 +70,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await _authRepository.ensureUserProfileExists(user);
       }
       emit(state.copyWith(status: AuthStatus.authenticated, user: user));
+      getIt<AnalyticsService>().logLogin();
+      getIt<AnalyticsService>().setUserId(user?.uid);
     } catch (e) {
       emit(
         state.copyWith(
@@ -86,6 +91,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     await getIt<HomeSummaryCubit>().resetSubscriptions();
 
     await _authRepository.logout();
+    getIt<AnalyticsService>().logLogout();
+    getIt<AnalyticsService>().setUserId(null);
     emit(state.copyWith(status: AuthStatus.unauthenticated, user: null));
   }
 
