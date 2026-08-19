@@ -78,6 +78,9 @@ class _AddExpenseViewState extends State<_AddExpenseView> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColors>()!;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(title: Text('add_expense'.tr())),
       body: SafeArea(
@@ -149,17 +152,15 @@ class _AddExpenseViewState extends State<_AddExpenseView> {
                                 width: 68,
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? AppTheme.primaryColor.withValues(
+                                      ? colorScheme.primary.withValues(
                                           alpha: 0.15,
                                         )
-                                      : Theme.of(context)
-                                            .colorScheme
-                                            .surfaceContainerHighest
-                                            .withValues(alpha: 0.3),
+                                      : colorScheme.surfaceContainerHighest
+                                            .withValues(alpha: 0.4),
                                   borderRadius: BorderRadius.circular(14),
                                   border: Border.all(
                                     color: isSelected
-                                        ? AppTheme.primaryColor
+                                        ? colorScheme.primary
                                         : Colors.transparent,
                                     width: 2,
                                   ),
@@ -170,10 +171,8 @@ class _AddExpenseViewState extends State<_AddExpenseView> {
                                     Icon(
                                       cat.icon,
                                       color: isSelected
-                                          ? AppTheme.primaryColor
-                                          : Theme.of(
-                                              context,
-                                            ).colorScheme.onSurface,
+                                          ? colorScheme.primary
+                                          : colorScheme.onSurface,
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
@@ -274,7 +273,6 @@ class _AddExpenseViewState extends State<_AddExpenseView> {
                         );
                       }
 
-                      // Custom split view
                       final amountValue =
                           double.tryParse(
                             _formKey.currentState?.fields['amount']?.value
@@ -334,8 +332,8 @@ class _AddExpenseViewState extends State<_AddExpenseView> {
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: isBalanced
-                                      ? Colors.green
-                                      : Colors.orange,
+                                      ? appColors.positive
+                                      : appColors.warning,
                                 ),
                               ),
                             ],

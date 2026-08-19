@@ -58,17 +58,18 @@ class _SplashViewState extends State<_SplashView> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColors>()!;
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         _pendingState = state;
         _navigateIfReady();
       },
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
+            colors: [appColors.cardGradientStart, appColors.cardGradientEnd],
           ),
         ),
         child: Center(
@@ -83,7 +84,9 @@ class _SplashViewState extends State<_SplashView> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.35),
+                          color: appColors.cardGradientStart.withValues(
+                            alpha: 0.35,
+                          ),
                           blurRadius: 35,
                           spreadRadius: 6,
                           offset: const Offset(0, 12),

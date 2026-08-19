@@ -52,8 +52,21 @@ class _CreateGroupViewState extends State<_CreateGroupView> {
   @override
   Widget build(BuildContext context) {
     final currentUser = getIt<AuthBloc>().state.user;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(title: Text('create_group'.tr())),
+      appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleSpacing: 20,
+        title: Text(
+          'create_group'.tr(),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.3,
+          ),
+        ),
+      ),
       body: BlocConsumer<GroupBloc, GroupState>(
         listener: (context, state) {
           if (state.status == GroupStatus.created) {
@@ -74,195 +87,457 @@ class _CreateGroupViewState extends State<_CreateGroupView> {
           final isCreating = state.status == GroupStatus.creating;
 
           return SafeArea(
-            child: Padding(
-              padding: EdgeInsetsGeometry.all(20),
-              child: FormBuilder(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'choose_emoji'.tr(),
-                      style: Theme.of(context).textTheme.titleSmall,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return FormBuilder(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      8,
+                      20,
+                      MediaQuery.of(context).viewInsets.bottom + 24,
                     ),
-                    const SizedBox(height: 12),
-
-                    BlocBuilder<CreateGroupFormCubit, CreateGroupFormState>(
-                      buildWhen: (prev, curr) =>
-                          prev.selectedEmoji != curr.selectedEmoji,
-                      builder: (context, formState) {
-                        return SizedBox(
-                          height: 56,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: GroupIcons.options.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 10),
-                            itemBuilder: (context, index) {
-                              final emoji = GroupIcons.options[index];
-                              final isSelected =
-                                  emoji == formState.selectedEmoji;
-                              return GestureDetector(
-                                onTap: () => context
-                                    .read<CreateGroupFormCubit>()
-                                    .selectEmoji(emoji),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  width: 56,
-                                  height: 56,
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? Theme.of(context).colorScheme.primary
-                                              .withValues(alpha: 0.15)
-                                        : Theme.of(context)
-                                              .colorScheme
-                                              .surfaceContainerHighest
-                                              .withValues(alpha: 0.3),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? Theme.of(
-                                              context,
-                                            ).colorScheme.primary
-                                          : Colors.transparent,
-                                      width: 2,
-                                    ),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight - 16,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.fromLTRB(
+                                  18,
+                                  18,
+                                  18,
+                                  16,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.08,
                                   ),
-                                  child: Center(
-                                    child: Text(
-                                      emoji,
-                                      style: const TextStyle(fontSize: 26),
+                                  borderRadius: BorderRadius.circular(22),
+                                  border: Border.all(
+                                    color: colorScheme.primary.withValues(
+                                      alpha: 0.10,
                                     ),
                                   ),
                                 ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 48,
+                                      height: 48,
+                                      decoration: BoxDecoration(
+                                        color: colorScheme.primary.withValues(
+                                          alpha: 0.14,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.groups_rounded,
+                                        color: colorScheme.primary,
+                                        size: 25,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 13),
+                                    Expanded(
+                                      child: Text(
+                                        'create_group'.tr(),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                              .animate()
+                              .fadeIn(duration: 450.ms, curve: Curves.easeOut)
+                              .slideY(
+                                begin: -0.06,
+                                end: 0,
+                                duration: 450.ms,
+                                curve: Curves.easeOutCubic,
+                              ),
+
+                          const SizedBox(height: 24),
+
+                          Text(
+                            'choose_emoji'.tr(),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 10),
+
+                          BlocBuilder<
+                            CreateGroupFormCubit,
+                            CreateGroupFormState
+                          >(
+                            buildWhen: (prev, curr) =>
+                                prev.selectedEmoji != curr.selectedEmoji,
+                            builder: (context, formState) {
+                              return Container(
+                                    height: 74,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 9,
+                                      vertical: 9,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.surface,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: colorScheme.outlineVariant
+                                            .withValues(alpha: 0.35),
+                                      ),
+                                    ),
+                                    child: ListView.separated(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: GroupIcons.options.length,
+                                      separatorBuilder: (_, __) =>
+                                          const SizedBox(width: 7),
+                                      itemBuilder: (context, index) {
+                                        final emoji = GroupIcons.options[index];
+                                        final isSelected =
+                                            emoji == formState.selectedEmoji;
+                                        return GestureDetector(
+                                          onTap: () => context
+                                              .read<CreateGroupFormCubit>()
+                                              .selectEmoji(emoji),
+                                          child: AnimatedScale(
+                                            scale: isSelected ? 1.04 : 1,
+                                            duration: const Duration(
+                                              milliseconds: 180,
+                                            ),
+                                            curve: Curves.easeOutBack,
+                                            child: AnimatedContainer(
+                                              duration: const Duration(
+                                                milliseconds: 220,
+                                              ),
+                                              curve: Curves.easeOutCubic,
+                                              width: 56,
+                                              height: 56,
+                                              decoration: BoxDecoration(
+                                                color: isSelected
+                                                    ? colorScheme.primary
+                                                          .withValues(
+                                                            alpha: 0.15,
+                                                          )
+                                                    : colorScheme
+                                                          .surfaceContainerHighest
+                                                          .withValues(
+                                                            alpha: 0.45,
+                                                          ),
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                                border: Border.all(
+                                                  color: isSelected
+                                                      ? colorScheme.primary
+                                                      : Colors.transparent,
+                                                  width: 2,
+                                                ),
+                                                boxShadow: isSelected
+                                                    ? [
+                                                        BoxShadow(
+                                                          color: colorScheme
+                                                              .primary
+                                                              .withValues(
+                                                                alpha: 0.16,
+                                                              ),
+                                                          blurRadius: 10,
+                                                          offset: const Offset(
+                                                            0,
+                                                            4,
+                                                          ),
+                                                        ),
+                                                      ]
+                                                    : null,
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  emoji,
+                                                  style: const TextStyle(
+                                                    fontSize: 26,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  )
+                                  .animate()
+                                  .fadeIn(delay: 150.ms, duration: 450.ms)
+                                  .slideX(
+                                    begin: 0.06,
+                                    end: 0,
+                                    delay: 150.ms,
+                                    duration: 450.ms,
+                                    curve: Curves.easeOutCubic,
+                                  );
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          FormBuilderTextField(
+                                name: 'groupName',
+                                textCapitalization: TextCapitalization.words,
+                                decoration: InputDecoration(
+                                  labelText: 'group_name'.tr(),
+                                  prefixIcon: const Icon(
+                                    Icons.drive_file_rename_outline,
+                                  ),
+                                  filled: true,
+                                  fillColor: colorScheme.surfaceContainerHighest
+                                      .withValues(alpha: 0.35),
+                                ),
+                                validator: FormBuilderValidators.compose([
+                                  FormBuilderValidators.required(),
+                                  FormBuilderValidators.minLength(2),
+                                ]),
+                              )
+                              .animate()
+                              .fadeIn(delay: 250.ms, duration: 450.ms)
+                              .slideY(
+                                begin: 0.06,
+                                end: 0,
+                                delay: 250.ms,
+                                duration: 450.ms,
+                                curve: Curves.easeOutCubic,
+                              ),
+
+                          const SizedBox(height: 26),
+
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'add_members'.tr(),
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 9,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.09,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Icon(
+                                  Icons.person_add_alt_1_rounded,
+                                  size: 16,
+                                  color: colorScheme.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+
+                          BlocBuilder<
+                            CreateGroupFormCubit,
+                            CreateGroupFormState
+                          >(
+                            builder: (context, formState) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _emailController,
+                                          textInputAction: TextInputAction.done,
+                                          decoration: InputDecoration(
+                                            hintText: 'member_email_hint'.tr(),
+                                            prefixIcon: const Icon(
+                                              Icons.email_outlined,
+                                            ),
+                                            errorText: formState.memberError,
+                                            filled: true,
+                                            fillColor: colorScheme
+                                                .surfaceContainerHighest
+                                                .withValues(alpha: 0.35),
+                                          ),
+                                          keyboardType:
+                                              TextInputType.emailAddress,
+                                          onSubmitted: (value) {
+                                            context
+                                                .read<CreateGroupFormCubit>()
+                                                .addMemberByEmail(value);
+                                            _emailController.clear();
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      formState.isAddingMember
+                                          ? const Padding(
+                                              padding: EdgeInsets.all(12),
+                                              child: SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                    ),
+                                              ),
+                                            )
+                                          : IconButton.filled(
+                                              tooltip: 'Add member',
+                                              style: IconButton.styleFrom(
+                                                minimumSize: const Size(52, 52),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                ),
+                                              ),
+                                              onPressed: () {
+                                                context
+                                                    .read<
+                                                      CreateGroupFormCubit
+                                                    >()
+                                                    .addMemberByEmail(
+                                                      _emailController.text,
+                                                    );
+                                                _emailController.clear();
+                                              },
+                                              icon: const Icon(Icons.add),
+                                            ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 12),
+
+                                  if (formState.memberEmails.isNotEmpty)
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: formState.memberEmails.map((
+                                        email,
+                                      ) {
+                                        return InputChip(
+                                              label: Text(
+                                                email,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              onDeleted: () => context
+                                                  .read<CreateGroupFormCubit>()
+                                                  .removeMember(email),
+                                              avatar: const Icon(
+                                                Icons.person_rounded,
+                                                size: 17,
+                                              ),
+                                              deleteIcon: const Icon(
+                                                Icons.close_rounded,
+                                                size: 17,
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 4,
+                                                    vertical: 5,
+                                                  ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(14),
+                                              ),
+                                              side: BorderSide(
+                                                color: colorScheme
+                                                    .outlineVariant
+                                                    .withValues(alpha: 0.45),
+                                              ),
+                                              backgroundColor:
+                                                  colorScheme.surface,
+                                            )
+                                            .animate()
+                                            .fadeIn(
+                                              duration: 300.ms,
+                                              curve: Curves.easeOut,
+                                            )
+                                            .slideX(
+                                              begin: -0.04,
+                                              end: 0,
+                                              duration: 300.ms,
+                                              curve: Curves.easeOutCubic,
+                                            )
+                                            .scale(
+                                              begin: const Offset(0.88, 0.88),
+                                              end: const Offset(1, 1),
+                                              duration: 300.ms,
+                                              curve: Curves.easeOutBack,
+                                            );
+                                      }).toList(),
+                                    ),
+                                ],
                               );
                             },
                           ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                    FormBuilderTextField(
-                      name: 'groupName',
-                      decoration: InputDecoration(
-                        labelText: 'group_name'.tr(),
-                        prefixIcon: const Icon(Icons.groups_rounded),
-                      ),
-                      validator: FormBuilderValidators.compose([
-                        FormBuilderValidators.required(),
-                        FormBuilderValidators.minLength(2),
-                      ]),
-                    ),
 
-                    const SizedBox(height: 24),
-
-                    Text(
-                      'add_members'.tr(),
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 12),
-
-                    BlocBuilder<CreateGroupFormCubit, CreateGroupFormState>(
-                      builder: (context, formState) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextField(
-                                    controller: _emailController,
-                                    decoration: InputDecoration(
-                                      hintText: 'member_email_hint'.tr(),
-                                      prefixIcon: const Icon(
-                                        Icons.email_outlined,
-                                      ),
-                                      errorText: formState.memberError,
+                          const SizedBox(height: 28),
+                          SizedBox(
+                                width: double.infinity,
+                                height: 54,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(17),
                                     ),
-                                    keyboardType: TextInputType.emailAddress,
-                                    onSubmitted: (value) {
-                                      context
-                                          .read<CreateGroupFormCubit>()
-                                          .addMemberByEmail(value);
-                                      _emailController.clear();
-                                    },
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                formState.isAddingMember
-                                    ? const Padding(
-                                        padding: EdgeInsets.all(12),
-                                        child: SizedBox(
-                                          width: 20,
+                                  onPressed: isCreating
+                                      ? null
+                                      : () =>
+                                            _submit(context, currentUser?.uid),
+                                  child: isCreating
+                                      ? const SizedBox(
                                           height: 20,
+                                          width: 20,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Text(
+                                          'create_group_button'.tr(),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 15,
                                           ),
                                         ),
-                                      )
-                                    : IconButton.filled(
-                                        onPressed: () {
-                                          context
-                                              .read<CreateGroupFormCubit>()
-                                              .addMemberByEmail(
-                                                _emailController.text,
-                                              );
-                                          _emailController.clear();
-                                        },
-                                        icon: const Icon(Icons.add),
-                                      ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 12),
-
-                            if (formState.memberEmails.isNotEmpty)
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: formState.memberEmails.map((email) {
-                                  return Chip(
-                                        label: Text(email),
-                                        onDeleted: () => context
-                                            .read<CreateGroupFormCubit>()
-                                            .removeMember(email),
-                                        avatar: const Icon(
-                                          Icons.person,
-                                          size: 18,
-                                        ),
-                                      )
-                                      .animate()
-                                      .fadeIn(duration: 250.ms)
-                                      .scale(
-                                        begin: const Offset(0.8, 0.8),
-                                        end: const Offset(1, 1),
-                                      );
-                                }).toList(),
+                                ),
+                              )
+                              .animate()
+                              .fadeIn(delay: 400.ms, duration: 450.ms)
+                              .slideY(
+                                begin: 0.12,
+                                end: 0,
+                                delay: 400.ms,
+                                duration: 500.ms,
+                                curve: Curves.easeOutBack,
+                              )
+                              .scale(
+                                begin: const Offset(0.97, 0.97),
+                                end: const Offset(1, 1),
+                                delay: 400.ms,
+                                duration: 500.ms,
+                                curve: Curves.easeOutCubic,
                               ),
-                          ],
-                        );
-                      },
+                        ],
+                      ),
                     ),
-
-                    const Spacer(),
-                    ElevatedButton(
-                      onPressed: isCreating
-                          ? null
-                          : () => _submit(context, currentUser?.uid),
-                      child: isCreating
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text('create_group_button'.tr()),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           );
         },

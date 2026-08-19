@@ -6,7 +6,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:splitsathi/core/constants/avatar_options.dart';
 import 'package:splitsathi/core/di/service_locator.dart';
 import 'package:splitsathi/core/router/app_routes.dart';
-import 'package:splitsathi/core/theme/app_theme.dart';
 import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
 import 'package:splitsathi/features/auth/bloc/auth_event.dart';
 import 'package:splitsathi/features/profile/repository/profile_repository.dart';
@@ -19,6 +18,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = getIt<AuthBloc>().state.user;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: Text('profile'.tr())),
@@ -42,10 +42,10 @@ class ProfileScreen extends StatelessWidget {
                         width: 90,
                         height: 90,
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                          color: colorScheme.primary.withValues(alpha: 0.12),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: AppTheme.primaryColor,
+                            color: colorScheme.primary,
                             width: 2,
                           ),
                         ),
@@ -76,9 +76,7 @@ class ProfileScreen extends StatelessWidget {
                           Icon(
                             Icons.edit_outlined,
                             size: 16,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.5),
+                            color: colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
                         ],
                       ),
@@ -101,7 +99,7 @@ class ProfileScreen extends StatelessWidget {
               _SettingsTile(
                 icon: Icons.star_outline_rounded,
                 title: 'rate_us'.tr(),
-                onTap: () => _launchPlayStoreReview,
+                onTap: _launchPlayStoreReview,
               ),
               _SettingsTile(
                 icon: Icons.share_outlined,
@@ -125,6 +123,8 @@ class ProfileScreen extends StatelessWidget {
     String userId,
     String? currentAvatarId,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -132,7 +132,7 @@ class ProfileScreen extends StatelessWidget {
       ),
       builder: (sheetContext) {
         return Padding(
-          padding: EdgeInsetsGeometry.all(24),
+          padding: const EdgeInsetsGeometry.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -158,14 +158,12 @@ class ProfileScreen extends StatelessWidget {
                       height: 56,
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppTheme.primaryColor.withValues(alpha: 0.2)
-                            : Theme.of(
-                                context,
-                              ).colorScheme.surfaceContainerHighest,
+                            ? colorScheme.primary.withValues(alpha: 0.2)
+                            : colorScheme.surfaceContainerHighest,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isSelected
-                              ? AppTheme.primaryColor
+                              ? colorScheme.primary
                               : Colors.transparent,
                           width: 2,
                         ),
@@ -287,12 +285,12 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: Theme.of(
-          context,
-        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.25),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
@@ -301,7 +299,7 @@ class _SettingsTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                Icon(icon, color: AppTheme.primaryColor),
+                Icon(icon, color: colorScheme.primary),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
@@ -309,7 +307,10 @@ class _SettingsTile extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.w500),
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: colorScheme.onSurface.withValues(alpha: 0.4),
+                ),
               ],
             ),
           ),

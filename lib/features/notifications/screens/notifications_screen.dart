@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:splitsathi/core/di/service_locator.dart';
 import 'package:splitsathi/core/router/app_routes.dart';
-import 'package:splitsathi/core/theme/app_theme.dart';
 import 'package:splitsathi/services/analytics_service.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
@@ -98,24 +97,24 @@ class _NotificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: notification.isRead
-            ? Theme.of(context).colorScheme.surface
-            : AppTheme.primaryColor.withValues(alpha: 0.06),
+            ? colorScheme.surface
+            : colorScheme.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.15)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         leading: CircleAvatar(
-          backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.15),
-          child: const Icon(
+          backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
+          child: Icon(
             Icons.receipt_long_rounded,
-            color: AppTheme.primaryColor,
+            color: colorScheme.primary,
             size: 20,
           ),
         ),

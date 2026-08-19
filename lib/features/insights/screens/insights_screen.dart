@@ -9,17 +9,6 @@ import 'package:splitsathi/core/theme/app_theme.dart';
 import 'package:splitsathi/features/insights/cubit/insights_cubit.dart';
 import 'package:splitsathi/services/analytics_service.dart';
 
-const List<Color> _chartColors = [
-  AppTheme.primaryColor,
-  AppTheme.secondaryColor,
-  Color(0xFFFFA726),
-  Color(0xFFEF5350),
-  Color(0xFF66BB6A),
-  Color(0xFF42A5F5),
-  Color(0xFFAB47BC),
-  Color(0xFF26C6DA),
-];
-
 class InsightsScreen extends StatelessWidget {
   final String groupId;
   const InsightsScreen({super.key, required this.groupId});
@@ -38,6 +27,9 @@ class _InsightsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     getIt<AnalyticsService>().logInsightsViewed();
+    final appColors = Theme.of(context).extension<AppColors>()!;
+    final chartColors = appColors.chartPalette;
+
     return Scaffold(
       appBar: AppBar(title: Text('insights'.tr())),
       body: BlocBuilder<InsightsCubit, InsightsState>(
@@ -100,7 +92,7 @@ class _InsightsView extends StatelessWidget {
                           ) {
                             final item = state.breakdown[index];
                             final color =
-                                _chartColors[index % _chartColors.length];
+                                chartColors[index % chartColors.length];
                             return PieChartSectionData(
                               color: color,
                               value: item.totalAmount,
@@ -134,7 +126,7 @@ class _InsightsView extends StatelessWidget {
 
                 ...List.generate(state.breakdown.length, (index) {
                   final item = state.breakdown[index];
-                  final color = _chartColors[index % _chartColors.length];
+                  final color = chartColors[index % chartColors.length];
 
                   return Container(
                         margin: const EdgeInsets.only(bottom: 10),
@@ -143,7 +135,7 @@ class _InsightsView extends StatelessWidget {
                           color: Theme.of(context)
                               .colorScheme
                               .surfaceContainerHighest
-                              .withValues(alpha: 0.25),
+                              .withValues(alpha: 0.4),
                           borderRadius: BorderRadius.circular(14),
                         ),
 
