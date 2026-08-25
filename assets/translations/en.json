@@ -132,5 +132,7 @@
   "incorrect_password": "Incorrect password. Please try again.",
   "send_feedback": "Send Feedback",
   "whats_new": "What's New in {}",
-  "got_it": "Got it"
+  "got_it": "Got it",
+  "expense_details": "Expense Details",
+  "enter_description": "What was this expense for?"
 }
