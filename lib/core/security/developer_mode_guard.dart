@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../router/app_router.dart';
+import '../theme/app_theme.dart';
 
 class DeveloperModeGuard extends StatefulWidget {
   final Widget child;
@@ -77,6 +78,7 @@ class _DeveloperModeGuardState extends State<DeveloperModeGuard>
     final navigatorContext = AppRouter.rootNavigatorKey.currentContext;
     if (navigatorContext == null) return;
     final theme = Theme.of(navigatorContext);
+    final appColors = theme.extension<AppColors>()!;
 
     _overlayEntry = OverlayEntry(
       builder: (overlayContext) {
@@ -86,7 +88,7 @@ class _DeveloperModeGuardState extends State<DeveloperModeGuard>
               Positioned.fill(
                 child: GestureDetector(
                   onTap: () {},
-                  child: Container(color: Colors.black.withOpacity(0.35)),
+                  child: Container(color: Colors.black.withValues(alpha: 0.35)),
                 ),
               ),
               Align(
@@ -118,8 +120,8 @@ class _DeveloperModeGuardState extends State<DeveloperModeGuard>
                             height: 4,
                             margin: const EdgeInsets.only(bottom: 16),
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.onSurface.withOpacity(
-                                0.2,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.2,
                               ),
                               borderRadius: BorderRadius.circular(2),
                             ),
@@ -127,7 +129,7 @@ class _DeveloperModeGuardState extends State<DeveloperModeGuard>
                           Icon(
                             Icons.info_outline_rounded,
                             size: 44,
-                            color: Colors.orange.shade700,
+                            color: appColors.warning,
                           ),
                           const SizedBox(height: 14),
                           Text(
@@ -142,8 +144,8 @@ class _DeveloperModeGuardState extends State<DeveloperModeGuard>
                           Text(
                             'developer_mode_message_soft'.tr(),
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withOpacity(
-                                0.7,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.7,
                               ),
                             ),
                             textAlign: TextAlign.center,

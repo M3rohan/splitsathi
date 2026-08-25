@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:splitsathi/core/di/service_locator.dart';
 import 'package:splitsathi/core/router/app_routes.dart';
+import 'package:splitsathi/core/theme/app_theme.dart';
 import 'package:splitsathi/core/theme/theme_cubit.dart';
 import 'package:splitsathi/features/auth/bloc/auth_bloc.dart';
 import 'package:splitsathi/features/auth/bloc/auth_event.dart';
@@ -28,6 +29,8 @@ class _SettingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColors>()!;
+
     return Scaffold(
       appBar: AppBar(title: Text('settings'.tr())),
       body: ListView(
@@ -119,13 +122,13 @@ class _SettingsView extends StatelessWidget {
             'danger_zone'.tr(),
             style: Theme.of(
               context,
-            ).textTheme.titleSmall?.copyWith(color: Colors.red),
+            ).textTheme.titleSmall?.copyWith(color: appColors.negative),
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.red,
-              side: const BorderSide(color: Colors.red),
+              foregroundColor: appColors.negative,
+              side: BorderSide(color: appColors.negative),
             ),
             onPressed: () => _showDeleteAccountFlow(context),
             icon: const Icon(Icons.delete_forever_outlined),
@@ -137,6 +140,8 @@ class _SettingsView extends StatelessWidget {
   }
 
   void _showDeleteAccountFlow(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColors>()!;
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -154,7 +159,7 @@ class _SettingsView extends StatelessWidget {
             },
             child: Text(
               'continue_word'.tr(),
-              style: const TextStyle(color: Colors.red),
+              style: TextStyle(color: appColors.negative),
             ),
           ),
         ],
@@ -163,6 +168,7 @@ class _SettingsView extends StatelessWidget {
   }
 
   void _promptPasswordAndDelete(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppColors>()!;
     final passwordController = TextEditingController();
     String? error;
 
@@ -203,7 +209,7 @@ class _SettingsView extends StatelessWidget {
                 },
                 child: Text(
                   'delete'.tr(),
-                  style: const TextStyle(color: Colors.red),
+                  style: TextStyle(color: appColors.negative),
                 ),
               ),
             ],

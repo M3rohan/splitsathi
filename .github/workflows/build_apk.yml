@@ -1,0 +1,67 @@
+name: Build APK (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.6'
+          channel: 'stable'
+
+      - name: Restore google-services.json
+        run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > android/app/google-services.json
+
+      - name: Restore firebase_options.dart
+        run: echo "${{ secrets.FIREBASE_OPTIONS_DART }}" | base64 --decode > lib/firebase_options.dart
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze
+        continue-on-error: true
+
+      - name: Build Debug APK
+        if: ${{ inputs.build_type == 'debug' }}
+        run: flutter build apk --debug
+
+      - name: Build Release APK
+        if: ${{ inputs.build_type == 'release' }}
+        run: flutter build apk --release --obfuscate --split-debug-info=build/symbols
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: splitsathi-${{ inputs.build_type }}-apk
+          path: build/app/outputs/flutter-apk/app-${{ inputs.build_type }}.apk
+
+      - name: Upload obfuscation symbols (release only)
+        if: ${{ inputs.build_type == 'release' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: splitsathi-release-symbols
+          path: build/symbols
